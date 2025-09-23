@@ -5,8 +5,6 @@ import { videos } from "@/data/draft";
 import { useSession } from "next-auth/react";
 
 export default function Feed() {
-	const {data} = useSession();
-	console.log(data)
 	return (
 		<div className="min-h-screen bg-background">
 			<div className="flex">

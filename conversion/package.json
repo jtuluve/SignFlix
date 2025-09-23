@@ -13,6 +13,7 @@
   "dependencies": {
     "@azure/functions": "^4.0.0",
     "@azure/storage-blob": "^12.28.0",
+    "ffmpeg-static": "^5.2.0",
     "os": "^0.1.2",
     "pg": "^8.16.3",
     "pose-format": "^1.6.0",
@@ -24,5 +25,5 @@
     "rimraf": "^5.0.0",
     "typescript": "^4.0.0"
   },
-  "main": "dist/src/{index.js,functions/*.js}"
+  "main": "dist/src/functions/*.js"
 }
