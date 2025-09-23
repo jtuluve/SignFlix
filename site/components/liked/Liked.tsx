@@ -1,31 +1,43 @@
 "use client"
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bookmark, CheckCircle, Grid3X3, List, Play, Clock } from 'lucide-react';
-import { getLibraryVideos, type Video } from "@/data/draft";
+// import { getlikedVideos, type Video } from "@/data/draft";
+import { getLikedVideos } from "@/lib/library";
+import { useSession } from "next-auth/react";
 
+
+type Video = {
+    id: string;
+    createdAt: Date;
+    title: string;
+    description: string | null;
+    videoUrl: string;
+    thumbnailUrl: string | null;
+    duration: number | null;
+    views: number;
+    likes: number;
+    tags: string[];
+    category: string | null;
+    uploaderId: string;
+}
 const Library = () => {
+  const {data:session} = useSession();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'title'>('recent');
+  const [likedVideos, setLikedVideos] = useState<{video: Video}[]>([]);
+  const [video, setVideo] = useState();
 
-  const libraryVideos = getLibraryVideos();
-
-  const sortedVideos = [...libraryVideos].sort((a, b) => {
-    switch (sortBy) {
-      case 'recent':
-        return b.time.localeCompare(a.time);
-      case 'oldest':
-        return a.time.localeCompare(b.time);
-      case 'title':
-        return a.title.localeCompare(b.title);
-      default:
-        return 0;
-    }
-  });
+  useEffect(() => {
+    ( async () => {
+      const liked = await getLikedVideos(session?.user?.id);
+      setLikedVideos(liked);
+    })();
+  },[]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -38,12 +50,12 @@ const Library = () => {
             <div>
               <h1 className="text-2xl font-bold">Watch Later</h1>
               <p className="text-gray-600 text-sm">
-                {libraryVideos.length} video{libraryVideos.length !== 1 ? 's' : ''} saved
+                {likedVideos.length} video{likedVideos.length !== 1 ? 's' : ''} saved
               </p>
             </div>
           </div>
 
-          {libraryVideos.length > 0 && (
+          {likedVideos.length > 0 && (
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <Button
@@ -82,17 +94,27 @@ const Library = () => {
           )}
         </div>
 
-        {libraryVideos.length > 0 ? (
+        {likedVideos.length > 0 ? (
           viewMode === 'grid' ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {sortedVideos.map((video) => (
-                <VideoCard key={video.id} video={video} />
+              {likedVideos.map((video) => (
+                <Image key={video.video.id}
+                  src={video.video.thumbnailUrl || "/placeholder.svg"}
+                  alt={video.video.title}
+                  fill
+                  className="object-cover group-hover:scale-102 transition-transform duration-500"
+                />
               ))}
             </div>
           ) : (
             <div className="space-y-4">
-              {sortedVideos.map((video) => (
-                <VideoListItem key={video.id} video={video} />
+              {likedVideos.map((video) => (
+                <Image key={video.video.id}
+                  src={video.video.thumbnailUrl || "/placeholder.svg"}
+                  alt={video.video.title}
+                  fill
+                  className="object-cover group-hover:scale-102 transition-transform duration-500"
+                />
               ))}
             </div>
           )
@@ -169,14 +191,14 @@ const EmptyLibraryState = () => {
 };
 
 const VideoCard = ({ video }: { video: Video }) => {
-  const channelInfo = video.channel && typeof video.channel === 'object' ? video.channel : null;
+  const channelInfo =  null;
 
   return (
     <Link href={`/watch/${video.id}`} className="group">
       <div className="space-y-3">
         <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
           <Image
-            src={video.thumbnail || "/placeholder.svg"}
+            src={video.thumbnailUrl || "/placeholder.svg"}
             alt={video.title}
             fill
             className="object-cover group-hover:scale-102 transition-transform duration-500"
@@ -217,7 +239,7 @@ const VideoCard = ({ video }: { video: Video }) => {
                 </div>
               )}
               <p className="text-sm text-gray-600">
-                {video.views} views • {video.time}
+                {video.views} views • {video.duration}
               </p>
             </div>
           </div>
@@ -228,14 +250,14 @@ const VideoCard = ({ video }: { video: Video }) => {
 };
 
 const VideoListItem = ({ video }: { video: Video }) => {
-  const channelInfo = video.channel && typeof video.channel === 'object' ? video.channel : null;
+  const channelInfo =  null;
 
   return (
     <Link href={`/watch/${video.id}`} className="group">
       <div className="flex flex-col md:flex-row gap-0 md:gap-4 rounded-lg hover:bg-white transition-colors overflow-hidden md:p-4 border border-transparent hover:border-gray-200 hover:shadow-sm">
         <div className="relative w-full md:w-48 aspect-video md:rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
           <Image
-            src={video.thumbnail || "/placeholder.svg"}
+            src={video.thumbnailUrl || "/placeholder.svg"}
             alt={video.title}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-200"
@@ -274,7 +296,7 @@ const VideoListItem = ({ video }: { video: Video }) => {
             </div>
           )}
           <p className="text-xs md:text-sm text-gray-600">
-            {video.views} views • {video.time}
+            {video.views} views • {video.duration}
           </p>
         </div>
       </div>
