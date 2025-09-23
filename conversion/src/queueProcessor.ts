@@ -3,7 +3,7 @@ import { getVideoInfoFromDb, saveResultToDb } from "./helpers/db";
 import path = require("path");
 import { downloadCaptions, headersAreSame, mergePoseJson, mergeVideos, textToPoseFile } from "./helpers/captions";
 import { poseToVideo, poseJsonToVideo } from "pose-to-video";
-import { Pose } from "pose-format";
+import { Pose } from "pose-to-video/src/pose-format";
 import { timeStringToSeconds } from './helpers/utils';
 import { uploadToBlob } from "./helpers/blob";
 import * as fs from "fs";
