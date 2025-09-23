@@ -1,37 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import updateUserProfile from "@/lib/updateuser";
+import { getUserByEmail } from "@/utils/user";
 
 export default function ProfileSection() {
   const { data: session } = useSession();
 
-  // Extract initial user details from session
-  const initialUser = {
-    username: session?.user?.name || "",
-    email: session?.user?.email || "",
-    bio: (session?.user as any)?.bio || "No Bio",
-    avatarUrl: (session?.user as any)?.avatarUrl || "",
-  };
 
-  const [username, setUsername] = useState(initialUser.username);
-  const [email, setEmail] = useState(initialUser.email);
-  const [bio, setBio] = useState(initialUser.bio);
-  const [avatarUrl, setAvatarUrl] = useState(initialUser.avatarUrl);
+  const [username, setUsername] = useState(session?.user?.username || "");
+  const [email, setEmail] = useState(session?.user?.email || "");
+  const [bio, setBio] = useState((session?.user as any)?.bio || "No Bio");
   const [isEditing, setIsEditing] = useState(false);
 
-  console.log(session);
 
   const handleSave = () => {
-    console.log("Saving profile (schema-aligned)", { username, email, bio, avatarUrl });
+    updateUserProfile({ username, bio });
     alert("Profile saved (stub)");
     setIsEditing(false);
   };
+
+  useEffect(()=>{
+    (async()=>{
+        const user = await getUserByEmail(session.user.email);
+        setUsername(user?.username || "");
+        setBio(user?.bio || "No Bio");
+    })()
+  },[]);
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -58,22 +59,10 @@ export default function ProfileSection() {
           {/* Avatar */}
           <div className="flex items-center space-x-4">
             <Avatar className="h-16 w-16">
-              {avatarUrl ? (
-                <AvatarImage src={avatarUrl} alt={username} />
-              ) : (
                 <AvatarFallback className="bg-gray-200 text-black text-xl font-semibold">
                   {username ? username[0].toUpperCase() : "?"}
                 </AvatarFallback>
-              )}
             </Avatar>
-            {isEditing && (
-              <Input
-                type="url"
-                value={avatarUrl}
-                onChange={(e) => setAvatarUrl(e.target.value)}
-                placeholder="Avatar image URL"
-              />
-            )}
           </div>
 
           {/* Email */}
@@ -87,7 +76,7 @@ export default function ProfileSection() {
           {/* Username */}
           <div>
             <label htmlFor="username" className="block font-medium mb-2">
-              {isEditing ? "Username" : "Name"}
+              {isEditing ? "Username" : ""}
             </label>
             {isEditing ? (
               <Input
@@ -97,7 +86,7 @@ export default function ProfileSection() {
                 placeholder="your_handle"
               />
             ) : (
-              <p className="text-gray-800 text-sm">{username}</p>
+              <p className="text-gray-800">{username}</p>
             )}
           </div>
 
