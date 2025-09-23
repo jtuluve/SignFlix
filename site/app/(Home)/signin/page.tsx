@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-
+import { signIn } from "next-auth/react"
+import signUp from "@/lib/signUp";
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -14,12 +15,13 @@ export default function AuthPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLogin) {
-      console.log("Logging in with:", formData.email, formData.password);
+      let a = await signIn("credentials", { ...formData, redirect: false });
+      console.log(a);
     } else {
-      console.log("Signing up with:", formData);
+       await signUp(formData);
     }
   };
 
