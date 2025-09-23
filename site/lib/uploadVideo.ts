@@ -1,51 +1,89 @@
 "use server";
 
-import { PrismaClient, Prisma } from "@prisma/client";
+import {Prisma } from "@prisma/client";
 import { BlobServiceClient } from "@azure/storage-blob";
 import { v4 as uuidv4 } from "uuid";
 import { QueueClient } from "@azure/storage-queue";
 import path from "path";
-import { createVideo, getVideo } from "@/utils/video";
+import { createVideo } from "@/utils/video";
 const account = process.env.AZURE_STORAGE_ACCOUNT;
 const sasToken = process.env.AZURE_BLOB_SAS_TOKEN;
 const queueConnectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
 
-const containerName = "videos";
-const prisma = new PrismaClient();
+
 
 type UploadVideoInput = {
   metadata: Prisma.VideoCreateInput & { videoUrl?: string }; // e.g., title, description
-  file: File; // uploaded by user
+  videoFile: File;
+  captionFile?: File;
+  thumbnailFile?: File; // uploaded by user
 };
 
 export default async function uploadVideo({
   metadata,
-  file,
+  videoFile,
+  captionFile,
+  thumbnailFile,
 }: UploadVideoInput) {
     try{
-  //uploading to blob storage
+  //uploading to video blob storage
   const blobServiceClient = new BlobServiceClient(
     `https://${account}.blob.core.windows.net/?${sasToken}`
   );
-
-  const containerClient = blobServiceClient.getContainerClient(containerName);
+  let containerName = "videos";
+  let containerClient = blobServiceClient.getContainerClient(containerName);
   await containerClient.createIfNotExists({ access: "container" });
 
-  const blobName = `${uuidv4()}-${path.basename(file.name)}`;
+  let blobName = `${uuidv4()}-${path.basename(videoFile.name)}`;
 
-  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+  let blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
-  const buffer = Buffer.from(await file.arrayBuffer());
+  let buffer = Buffer.from(await videoFile.arrayBuffer());
   await blockBlobClient.uploadData(buffer, {
-    blobHTTPHeaders: { blobContentType: file.type },
+    blobHTTPHeaders: { blobContentType: videoFile.type },
   });
 
-  //pushing to db
-  const url = blockBlobClient.url;
+  let url = blockBlobClient.url;
   metadata.videoUrl = url;
+
+  //uploading caption to blob storage
+   containerName = "captions";
+   containerClient = blobServiceClient.getContainerClient(containerName);
+   await containerClient.createIfNotExists({ access: "container" });
+
+   blobName = `${uuidv4()}-${path.basename(captionFile.name)}`;
+
+   blockBlobClient = containerClient.getBlockBlobClient(blobName);
+
+   buffer = Buffer.from(await captionFile.arrayBuffer());
+  await blockBlobClient.uploadData(buffer, {
+    blobHTTPHeaders: { blobContentType: captionFile.type },
+  });
+
+    url = blockBlobClient.url;
+    metadata.captionUrl = url;
+
+  //pushing thumbnail to blob storage
+   containerName = "thumbnails";
+   containerClient = blobServiceClient.getContainerClient(containerName);
+  await containerClient.createIfNotExists({ access: "container" });
+  blobName = `${uuidv4()}-${path.basename(thumbnailFile.name)}`;
+
+   blockBlobClient = containerClient.getBlockBlobClient(blobName);
+
+   buffer = Buffer.from(await thumbnailFile.arrayBuffer());
+  await blockBlobClient.uploadData(buffer, {
+    blobHTTPHeaders: { blobContentType: thumbnailFile.type },
+  });
+   url = blockBlobClient.url;
+  metadata.thumbnailUrl = url;
+
+  
+  //pushing to db
   const videoCreated = await createVideo(metadata);
 
   //pushing to queue
+  
   const queueName = "videoprocessing";
   const queueClient = new QueueClient(queueConnectionString, queueName);
   await queueClient.createIfNotExists();

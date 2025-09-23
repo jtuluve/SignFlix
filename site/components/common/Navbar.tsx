@@ -42,7 +42,6 @@ export default function Navbar() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
   const { data: session } = useSession();
-  console.log("haha", session);
 
   const [searchQuery, setSearchQuery] = useState("");
   const desktopInputRef = useRef<HTMLInputElement | null>(null);
