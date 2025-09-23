@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react"
 import signUp from "@/lib/signUp";
+import { X } from "lucide-react";
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -27,7 +28,13 @@ export default function AuthPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-white">
-      <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-lg">
+      <div className="w-full relative max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-lg">
+        <a
+          href='\'
+          className="absolute right-4 top-4 text-black hover:bg-gray-100 p-1 rounded-b-sm"
+        >
+          <X size={20} />
+        </a>
         <h1 className="mb-6 text-center text-2xl font-bold text-black">
           {isLogin ? "Login" : "Sign Up"}
         </h1>

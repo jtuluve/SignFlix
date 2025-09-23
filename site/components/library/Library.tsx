@@ -179,7 +179,7 @@ const VideoCard = ({ video }: { video: Video }) => {
             src={video.thumbnail || "/placeholder.svg"}
             alt={video.title}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-200"
+            className="object-cover group-hover:scale-102 transition-transform duration-500"
           />
           <div className="absolute bottom-2 right-2">
             <div className="bg-black/80 text-white text-xs px-1.5 py-0.5 rounded">
