@@ -33,7 +33,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: site
+          path: ./site
 
   deploy:
     runs-on: ubuntu-latest
@@ -59,8 +59,9 @@ jobs:
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
-          app-name: 'SignFlix'
+          app-name: 'site'
           slot-name: 'Production'
-          package: site
+          package: ./site
 
           
+
