@@ -6,7 +6,7 @@ name: Build and deploy Node.js project to Azure Function App - processvideo
 on:
   push:
     branches:
-      - main
+      - prod
   workflow_dispatch:
 
 env:
@@ -41,7 +41,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
+          path: site
 
   deploy:
     runs-on: windows-latest
@@ -72,3 +72,5 @@ jobs:
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
 
           
+
+
