@@ -23,6 +23,7 @@ export default function UploadSection() {
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [captionFile, setCaptionFile] = useState<File | null>(null);
   const [showCaptionModal, setShowCaptionModal] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Prisma Video model fields (minus videoUrl): title, description?, thumbnailUrl?, captionUrl?, duration?, tags[], category?
@@ -65,37 +66,30 @@ export default function UploadSection() {
       return;
     }
   
-  const tags = metadata.tags
-    .split(",")
-    .map((t) => t.trim())
-    .filter(Boolean);
+    setIsPublishing(true);
+    try {
+      const tags = metadata.tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
 
-  const data = {...metadata,tags}
-  console.log(data+'sdjflksadjfaweorfjojfklasjfoijwoiefds')
-  await uploadVideo({data, videoFile: uploadedFile, captionFile, thumbnailFile});
+      const data = {...metadata,tags}
+      console.log(data+'sdjflksadjfaweorfjojfklasjfoijwoiefds')
+      await uploadVideo({data, videoFile: uploadedFile, captionFile, thumbnailFile});
 
-    // Convert comma-separated tags to array
+      alert("Video submitted (stub). Wire this to your upload + createVideo() server action.");
 
-    // Stub: videoUrl will be produced by your upload/storage pipeline; we don't expose an input for it
-    // console.log("Publishing video (schema-aligned)", {
-    //   file: uploadedFile,
-    //   details: {
-    //     title: metadata.title,
-    //     description: metadata.description || null,
-    //     thumbnailFile,
-    //     captionFile,
-    //     tags,
-    //     category: metadata.category || null,
-    //     // duration to be computed after upload/processing
-    //   },
-    // });
-    alert("Video submitted (stub). Wire this to your upload + createVideo() server action.");
-
-    // reset
-    setUploadedFile(null);
-    setThumbnailFile(null);
-    setCaptionFile(null);
-    setmetadata({ title: "", description: "", tags: "", category: "" });
+      // reset
+      setUploadedFile(null);
+      setThumbnailFile(null);
+      setCaptionFile(null);
+      setmetadata({ title: "", description: "", tags: "", category: "" });
+    } catch (error) {
+      console.error("Failed to publish video:", error);
+      alert("Failed to publish video. Please try again.");
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   return (
@@ -242,8 +236,8 @@ export default function UploadSection() {
 
       {uploadedFile && (
         <div className="flex justify-end">
-          <Button onClick={handlePublish} size="lg" className="px-8">
-            Publish Video
+          <Button onClick={handlePublish} size="lg" className="px-8" disabled={isPublishing}>
+            {isPublishing ? 'Publishing...' : 'Publish Video'}
           </Button>
         </div>
       )}

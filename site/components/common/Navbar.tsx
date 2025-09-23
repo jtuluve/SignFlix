@@ -21,9 +21,12 @@ import {
   Upload,
   Home,
   FileText,
+  Library,
   Clock,
+  Heart,
   User,
   Plus,
+  ChevronRight,
 } from "lucide-react";
 import VoiceSearchDialog from "@/components/common/voice-search-dialog";
 import SignLanguageDialog from "@/components/common/sign-language-dialog";
@@ -39,6 +42,7 @@ export default function Navbar() {
   const [isClient, setIsClient] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const { data: session } = useSession();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
@@ -123,8 +127,8 @@ export default function Navbar() {
                     isClient && isVoiceModalOpen
                       ? "Voice search active..."
                       : isClient && isCameraModalOpen
-                      ? "Sign language active..."
-                      : "Search"
+                        ? "Sign language active..."
+                        : "Search"
                   }
                   suppressHydrationWarning
                 />
@@ -144,11 +148,10 @@ export default function Navbar() {
               <Button
                 variant="ghost"
                 size="icon"
-                className={`h-10 w-10 transition-colors rounded-full ${
-                  isClient && isVoiceModalOpen
-                    ? "bg-red-100 hover:bg-red-200 text-red-600"
-                    : "bg-gray-100 hover:bg-gray-200"
-                }`}
+                className={`h-10 w-10 transition-colors rounded-full ${isClient && isVoiceModalOpen
+                  ? "bg-red-100 hover:bg-red-200 text-red-600"
+                  : "bg-gray-100 hover:bg-gray-200"
+                  }`}
                 title="Voice Search - Click to start/stop voice input"
                 aria-label="Voice Search - Click to start/stop voice input"
                 onClick={() => {
@@ -156,17 +159,15 @@ export default function Navbar() {
                 }}
               >
                 <Mic
-                  className={`h-5 w-5 ${
-                    isClient && isVoiceModalOpen ? "animate-pulse" : ""
-                  }`}
+                  className={`h-5 w-5 ${isClient && isVoiceModalOpen ? "animate-pulse" : ""
+                    }`}
                 />
               </Button>
               <span
-                className={`absolute -top-1 -right-1 text-[10px] font-bold px-1 py-0.5 rounded shadow ${
-                  isClient && isVoiceModalOpen
-                    ? "bg-red-500 text-white"
-                    : "bg-blue-500 text-white"
-                }`}
+                className={`absolute -top-1 -right-1 text-[10px] font-bold px-1 py-0.5 rounded shadow ${isClient && isVoiceModalOpen
+                  ? "bg-red-500 text-white"
+                  : "bg-blue-500 text-white"
+                  }`}
               >
                 {isClient && isVoiceModalOpen ? "ON" : "Voice"}
               </span>
@@ -176,11 +177,10 @@ export default function Navbar() {
               <Button
                 variant="ghost"
                 size="icon"
-                className={`h-10 w-10 transition-colors rounded-full ${
-                  isClient && isCameraModalOpen
-                    ? "bg-green-100 hover:bg-green-200 text-green-600"
-                    : "bg-gray-100 hover:bg-gray-200"
-                }`}
+                className={`h-10 w-10 transition-colors rounded-full ${isClient && isCameraModalOpen
+                  ? "bg-green-100 hover:bg-green-200 text-green-600"
+                  : "bg-gray-100 hover:bg-gray-200"
+                  }`}
                 title="Sign Language Search - Click to start/stop sign language input"
                 aria-label="Sign Language Search - Click to start/stop sign language input"
                 onClick={() => {
@@ -188,9 +188,8 @@ export default function Navbar() {
                 }}
               >
                 <Video
-                  className={`h-5 w-5 ${
-                    isClient && isCameraModalOpen ? "animate-pulse" : ""
-                  }`}
+                  className={`h-5 w-5 ${isClient && isCameraModalOpen ? "animate-pulse" : ""
+                    }`}
                 />
               </Button>
               <span
@@ -247,8 +246,8 @@ export default function Navbar() {
                       isClient && isVoiceModalOpen
                         ? "Voice search active..."
                         : isClient && isCameraModalOpen
-                        ? "Sign language active..."
-                        : "Search"
+                          ? "Sign language active..."
+                          : "Search"
                     }
                     suppressHydrationWarning
                   />
@@ -256,23 +255,22 @@ export default function Navbar() {
                 <Button
                   size="icon"
                   className="h-10 w-16 bg-gray-50 hover:bg-gray-100 border border-l-0 border-gray-300 rounded-r-full text-gray-600"
-                variant="ghost"
-                aria-label="Search"
-                onClick={submitSearch}
-              >
-                <Search className="h-5 w-5" />
-              </Button>
-                
+                  variant="ghost"
+                  aria-label="Search"
+                  onClick={submitSearch}
+                >
+                  <Search className="h-5 w-5" />
+                </Button>
+
                 {/* voice */}
                 <div className="relative inline-block ml-2">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={`h-10 w-10 transition-colors rounded-full ${
-                      isClient && isVoiceModalOpen
-                        ? "bg-red-100 hover:bg-red-200 text-red-600"
-                        : "bg-gray-100 hover:bg-gray-200"
-                    }`}
+                    className={`h-10 w-10 transition-colors rounded-full ${isClient && isVoiceModalOpen
+                      ? "bg-red-100 hover:bg-red-200 text-red-600"
+                      : "bg-gray-100 hover:bg-gray-200"
+                      }`}
                     title="Voice Search - Click to start/stop voice input"
                     aria-label="Voice Search - Click to start/stop voice input"
                     onClick={() => {
@@ -280,17 +278,15 @@ export default function Navbar() {
                     }}
                   >
                     <Mic
-                      className={`h-5 w-5 ${
-                        isClient && isVoiceModalOpen ? "animate-pulse" : ""
-                      }`}
+                      className={`h-5 w-5 ${isClient && isVoiceModalOpen ? "animate-pulse" : ""
+                        }`}
                     />
                   </Button>
                   <span
-                    className={`absolute -top-1 -right-1 text-[10px] font-bold px-1 py-0.5 rounded shadow ${
-                      isClient && isVoiceModalOpen
-                        ? "bg-red-500 text-white"
-                        : "bg-blue-500 text-white"
-                    }`}
+                    className={`absolute -top-1 -right-1 text-[10px] font-bold px-1 py-0.5 rounded shadow ${isClient && isVoiceModalOpen
+                      ? "bg-red-500 text-white"
+                      : "bg-blue-500 text-white"
+                      }`}
                   >
                     {isClient && isVoiceModalOpen ? "ON" : "Voice"}
                   </span>
@@ -300,11 +296,10 @@ export default function Navbar() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={`h-10 w-10 transition-colors rounded-full ${
-                      isClient && isCameraModalOpen
-                        ? "bg-green-100 hover:bg-green-200 text-green-600"
-                        : "bg-gray-100 hover:bg-gray-200"
-                    }`}
+                    className={`h-10 w-10 transition-colors rounded-full ${isClient && isCameraModalOpen
+                      ? "bg-green-100 hover:bg-green-200 text-green-600"
+                      : "bg-gray-100 hover:bg-gray-200"
+                      }`}
                     title="Sign Language Search - Click to start/stop sign language input"
                     aria-label="Sign Language Search - Click to start/stop sign language input"
                     onClick={() => {
@@ -312,9 +307,8 @@ export default function Navbar() {
                     }}
                   >
                     <Video
-                      className={`h-5 w-5 ${
-                        isClient && isCameraModalOpen ? "animate-pulse" : ""
-                      }`}
+                      className={`h-5 w-5 ${isClient && isCameraModalOpen ? "animate-pulse" : ""
+                        }`}
                     />
                   </Button>
                   <span
@@ -337,19 +331,19 @@ export default function Navbar() {
                 <Search className="h-5 w-5" />
               </Button>
 
-            { session?.user &&
-              <Link href="/studios" target="_blank" className="hidden md:block">
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="flex items-center gap-2 px-4 py-2 h-10 rounded-full text-white shadow-md hover:shadow-lg transition-all duration-200"
-                  title="Open Studio"
-                >
-                  <Upload className="h-4 w-4" />
-                  <span className="font-medium text-sm">Studio</span>
-                </Button>
-              </Link>
-            }
+              {session?.user &&
+                <Link href="/studios" target="_blank" className="hidden md:block">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="flex items-center gap-2 px-4 py-2 h-10 rounded-full text-white shadow-md hover:shadow-lg transition-all duration-200"
+                    title="Open Studio"
+                  >
+                    <Upload className="h-4 w-4" />
+                    <span className="font-medium text-sm">Studio</span>
+                  </Button>
+                </Link>
+              }
 
               <Button
                 variant="ghost"
@@ -365,13 +359,15 @@ export default function Navbar() {
 
               {session?.user ? (
                 <Button
-                  onClick={() => {
-                    signOut();
+                  onClick={async () => {
+                    setIsSigningOut(true);
+                    await signOut();
                   }}
                   variant="outline"
                   className="h-9 px-3 border-neutral-300 text-neutral-700 hover:bg-neutral-50 text-sm bg-transparent"
+                  disabled={isSigningOut}
                 >
-                  Sign Out
+                  {isSigningOut ? "Signing out..." : "Sign Out"}
                 </Button>
               ) : (
                 <Link
@@ -402,11 +398,10 @@ export default function Navbar() {
       )}
 
       <aside
-        className={`fixed top-14 left-0 h-[calc(100vh-3.5rem)] bg-white transition-transform duration-300 ease-in-out z-40 border-r border-gray-200 hidden md:block ${
-          isSidebarOpen
-            ? "translate-x-0 w-64"
-            : "-translate-x-full md:translate-x-0 md:w-16 xl:w-20"
-        } md:transition-[width] md:duration-200`}
+        className={`fixed top-14 left-0 h-[calc(100vh-3.5rem)] bg-white transition-transform duration-300 ease-in-out z-40 border-r border-gray-200 hidden md:block ${isSidebarOpen
+          ? "translate-x-0 w-64"
+          : "-translate-x-full md:translate-x-0 md:w-16 xl:w-20"
+          } md:transition-[width] md:duration-200`}
         aria-label="Sidebar"
       >
         <nav className="flex flex-col h-full overflow-y-auto">
@@ -440,10 +435,21 @@ export default function Navbar() {
 
             <div className="space-y-1 mb-4">
               <hr
-                className={`mb-3 border-gray-200 ${
-                  !isSidebarOpen ? "md:hidden xl:hidden" : ""
-                }`}
+                className={`mb-3 border-gray-200 ${!isSidebarOpen ? "md:hidden xl:hidden" : ""
+                  }`}
               />
+              <Link
+                href={"/liked"}
+                className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-100"
+                onClick={closeSidebar}
+              >
+                <Heart className="w-6 h-6 flex-shrink-0" />
+                <span
+                  className={`${!isSidebarOpen ? "md:hidden xl:hidden" : ""}`}
+                >
+                  Liked
+                </span>
+              </Link>
               <Link
                 href={"/history"}
                 className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-100"
@@ -456,6 +462,20 @@ export default function Navbar() {
                   History
                 </span>
               </Link>
+              {session?.user &&
+                <Link
+                  href={"/studios"}
+                  className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-100"
+                  onClick={closeSidebar}
+                >
+                  <Clock className="w-6 h-6 flex-shrink-0" />
+                  <span
+                    className={`${!isSidebarOpen ? "md:hidden xl:hidden" : ""}`}
+                  >
+                    Studios
+                  </span>
+                </Link>
+              }
             </div>
           </div>
         </nav>
@@ -468,9 +488,8 @@ export default function Navbar() {
         <div className="flex items-center justify-between">
           <Link
             href="/"
-            className={`flex flex-1 flex-col items-center justify-center py-2 ${
-              activeTab === "home" ? "text-red-600" : "text-gray-600"
-            }`}
+            className={`flex flex-1 flex-col items-center justify-center py-2 ${activeTab === "home" ? "text-red-600" : "text-gray-600"
+              }`}
             onClick={() => setActiveTab("home")}
           >
             <Home className="h-5 w-5 mb-0.5" />
@@ -478,9 +497,8 @@ export default function Navbar() {
           </Link>
           <Link
             href="/subscriptions"
-            className={`flex flex-1 flex-col items-center justify-center py-2 ${
-              activeTab === "subscriptions" ? "text-red-600" : "text-gray-600"
-            }`}
+            className={`flex flex-1 flex-col items-center justify-center py-2 ${activeTab === "subscriptions" ? "text-red-600" : "text-gray-600"
+              }`}
             onClick={() => setActiveTab("subscriptions")}
           >
             <FileText className="h-5 w-5 mb-0.5" />
@@ -496,21 +514,19 @@ export default function Navbar() {
             <span className="text-xs font-medium text-gray-600">Studio</span>
           </Link>
           <Link
-            href="/history"
-            className={`flex flex-1 flex-col items-center justify-center py-2 ${
-              activeTab === "history" ? "text-red-600" : "text-gray-600"
-            }`}
-            onClick={() => setActiveTab("history")}
+            href="/liked"
+            className={`flex flex-1 flex-col items-center justify-center py-2 ${activeTab === "liked" ? "text-red-600" : "text-gray-600"
+              }`}
+            onClick={() => setActiveTab("liked")}
           >
-            <Clock className="h-5 w-5 mb-0.5" />
-            <span className="text-xs font-medium">history</span>
+            <Heart className="h-5 w-5 mb-0.5" />
+            <span className="text-xs font-medium">Liked</span>
           </Link>
           {session?.user ? (
             <Link
               href="/profile"
-              className={`flex flex-1 flex-col items-center justify-center py-2 ${
-                activeTab === "profile" ? "text-red-600" : "text-gray-600"
-              }`}
+              className={`flex flex-1 flex-col items-center justify-center py-2 ${activeTab === "profile" ? "text-red-600" : "text-gray-600"
+                }`}
               onClick={() => setActiveTab("profile")}
             >
               <Avatar className="h-5 w-5 mb-0.5">
@@ -524,9 +540,8 @@ export default function Navbar() {
           ) : (
             <Link
               href="/signin"
-              className={`flex flex-1 flex-col items-center justify-center py-2 ${
-                activeTab === "profile" ? "text-red-600" : "text-gray-600"
-              }`}
+              className={`flex flex-1 flex-col items-center justify-center py-2 ${activeTab === "profile" ? "text-red-600" : "text-gray-600"
+                }`}
               onClick={() => setActiveTab("profile")}
             >
               <User className="h-5 w-5 mb-0.5" />
