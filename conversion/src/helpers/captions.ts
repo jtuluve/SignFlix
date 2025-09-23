@@ -95,6 +95,8 @@ export async function mergeVideos(
     return;
   }
 
+  console.log("Merging videos...")
+
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "ffmerge-"));
   const listPath = path.join(tmpDir, "inputs.txt");
   const data = videoPaths
