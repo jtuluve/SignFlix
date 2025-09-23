@@ -66,7 +66,7 @@ export default function VideosSection() {
                 <div className="relative w-48 aspect-video rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                   <Image
                     priority={true}
-                    src={video.thumbnail || "/placeholder.svg"}
+                    src={video.thumbnailUrl || "/placeholder.svg"}
                     alt={video.title}
                     fill
                     className="object-cover"
