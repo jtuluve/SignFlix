@@ -6,7 +6,7 @@ name: Build and deploy Node.js project to Azure Function App - processvideo
 on:
   push:
     branches:
-      - main
+      - prod
   workflow_dispatch:
 
 env:
@@ -72,4 +72,5 @@ jobs:
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
 
           
+
 
