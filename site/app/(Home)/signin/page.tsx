@@ -12,6 +12,7 @@ export default function AuthPage() {
     password: "",
   });
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,25 +21,34 @@ export default function AuthPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLogin) {
-      let a = await signIn("credentials", {
-        ...formData,
-        redirect: false,
-        callbackUrl: "/",
-      });
-      if(a.ok){
-        window.location.replace("/");
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      if (isLogin) {
+        let a = await signIn("credentials", {
+          ...formData,
+          redirect: false,
+          callbackUrl: "/",
+        });
+        if (a.ok) {
+          window.location.replace("/");
+        } else {
+          setErrorMessage("Invalid credentials. Please try again.");
+        };
       } else {
-        setErrorMessage("Invalid credentials. Please try again.");
-      };
-    } else {
-      await signUp(formData);
-      await signIn("credentials", {
-        ...formData,
-        redirect: false,
-        callbackUrl: "/",
-      });
-      window.location.replace("/");
+        await signUp(formData);
+        await signIn("credentials", {
+          ...formData,
+          redirect: false,
+          callbackUrl: "/",
+        });
+        window.location.replace("/");
+      }
+    } catch (error) {
+      setErrorMessage("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -106,9 +116,10 @@ export default function AuthPage() {
 
           <button
             type="submit"
-            className="w-full cursor-pointer rounded-md bg-black px-4 py-2 text-white transition hover:bg-gray-800"
+            disabled={isLoading}
+            className="w-full cursor-pointer rounded-md bg-black px-4 py-2 text-white transition hover:bg-gray-800 disabled:bg-gray-500 disabled:cursor-not-allowed"
           >
-            {isLogin ? "Login" : "Sign Up"}
+            {isLoading ? (isLogin ? 'Logging in...' : 'Signing up...') : (isLogin ? 'Login' : 'Sign Up')}
           </button>
         </form>
 

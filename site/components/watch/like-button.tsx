@@ -14,6 +14,7 @@ export default function LikeButton({ videoId, baseCount = 0, initialLiked = fals
   const storageKey = useMemo(() => `like:video:${videoId}`, [videoId])
   const [liked, setLiked] = useState<boolean>(initialLiked)
   const [count, setCount] = useState<number>(baseCount + (initialLiked ? 1 : 0))
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     try {
@@ -25,16 +26,26 @@ export default function LikeButton({ videoId, baseCount = 0, initialLiked = fals
     } catch {}
   }, [storageKey, liked, initialLiked])
 
-  function toggle() {
-    setLiked((prev) => {
-      const next = !prev
-      setCount((c) => c + (next ? 1 : -1))
-      try {
-        if (next) window.localStorage.setItem(storageKey, "1")
-        else window.localStorage.removeItem(storageKey)
-      } catch {}
-      return next
-    })
+  async function toggle() {
+    setIsLoading(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      setLiked((prev) => {
+        const next = !prev;
+        setCount((c) => c + (next ? 1 : -1));
+        try {
+          if (next) window.localStorage.setItem(storageKey, "1");
+          else window.localStorage.removeItem(storageKey);
+        } catch {}
+        return next;
+      });
+    } catch (error) {
+      console.error("Failed to like video:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -42,6 +53,7 @@ export default function LikeButton({ videoId, baseCount = 0, initialLiked = fals
       variant={liked ? "default" : "outline"}
       size="sm"
       onClick={toggle}
+      disabled={isLoading}
       aria-pressed={liked}
       aria-label={liked ? "Unlike this video" : "Like this video"}
       className="gap-2"

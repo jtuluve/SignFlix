@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Toaster, toast } from 'sonner';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 
 // Edit form aligned to Prisma Video model: title, description?, tags[], category?, thumbnailUrl?, captionUrl?
 export default function EditVideoForm({ id }: { id: string }) {
@@ -12,20 +13,32 @@ export default function EditVideoForm({ id }: { id: string }) {
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
   const [category, setCategory] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     // TODO: load video by id via server action or API and set fields
     // For now, leave fields empty
   }, [id]);
 
-  const handleSave = () => {
-    const tagsArr = tags.split(",").map((t) => t.trim()).filter(Boolean);
-    console.log("Updating video", { id, title, description, category, tags: tagsArr });
-    alert("Video details saved (stub)");
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const tagsArr = tags.split(",").map((t) => t.trim()).filter(Boolean);
+      console.log("Updating video", { id, title, description, category, tags: tagsArr });
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success("Video details saved");
+    } catch (error) {
+      console.error("Failed to save video details:", error);
+      toast.error("Failed to save video details. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
+      <Toaster position="top-right" closeButton />
       <Card>
         <CardHeader>
           <CardTitle>Details</CardTitle>
@@ -58,7 +71,9 @@ export default function EditVideoForm({ id }: { id: string }) {
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSave}>Save Changes</Button>
+        <Button onClick={handleSave} disabled={isSaving}>
+          {isSaving ? 'Saving...' : 'Save Changes'}
+        </Button>
       </div>
     </div>
   );

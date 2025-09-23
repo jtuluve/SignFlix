@@ -1,11 +1,25 @@
+'use client';
+
+import getUserAnalytics from "@/lib/analytics";
+import { useEffect, useState } from "react";
+
+interface Metrics {
+  totalViews: number;
+  totalLikes: number;
+  totalVideos: number;
+  subscribers: number;
+}
+
 export default function AnalyticsSection() {
   // Schema-aligned metrics placeholders. Wire to db.getUserStats and aggregate video views/likes per uploader.
-  const metrics = {
-    totalViews: 234000,
-    totalLikes: 12500,
-    totalVideos: 24,
-    subscribers: 12050,
-  };
+  const [metrics, setMetrics] = useState<Metrics>();
+
+  useEffect(() => {
+    (async()=>{
+      const data = await getUserAnalytics();
+      setMetrics(data);
+    })()
+  },[])
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -13,19 +27,19 @@ export default function AnalyticsSection() {
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="p-6 border rounded-lg">
-          <div className="text-2xl font-bold">{metrics.totalViews.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{metrics?.totalViews.toLocaleString()}</div>
           <div className="text-sm text-gray-600">Total Views</div>
         </div>
         <div className="p-6 border rounded-lg">
-          <div className="text-2xl font-bold">{metrics.subscribers.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{metrics?.subscribers.toLocaleString()}</div>
           <div className="text-sm text-gray-600">Subscribers</div>
         </div>
         <div className="p-6 border rounded-lg">
-          <div className="text-2xl font-bold">{metrics.totalLikes.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{metrics?.totalLikes.toLocaleString()}</div>
           <div className="text-sm text-gray-600">Total Likes</div>
         </div>
         <div className="p-6 border rounded-lg">
-          <div className="text-2xl font-bold">{metrics.totalVideos.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{metrics?.totalVideos.toLocaleString()}</div>
           <div className="text-sm text-gray-600">Total Videos</div>
         </div>
       </div>
