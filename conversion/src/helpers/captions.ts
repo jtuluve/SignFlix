@@ -3,6 +3,7 @@ import * as fs from "fs";
 import path = require("path");
 import * as os from "os"
 import { spawn } from "child_process";
+import ffmpegPath from "ffmpeg-static";
 
 export type srt = {
   sequence: number;
@@ -97,7 +98,7 @@ export async function mergeVideos(videoPaths: string[], outputPath: string): Pro
   const data = videoPaths.map(p => `file '${p.replace(/'/g, "'\\''")}'`).join("\n");
   fs.writeFileSync(listPath, data, "utf8");
 
-  const ff = "ffmpeg";
+  const ff = ffmpegPath || "ffmpeg";
   await execCommand(ff, ["-y", "-f", "concat", "-safe", "0", "-i", listPath, "-c", "copy", outputPath], { timeout: 60 * 60_000 });
 
   // cleanup
