@@ -286,33 +286,34 @@ const Subscriptions = () => {
                   </div>
                 </button>
 
-              {displayedChannels.map((channel) => (
-                <button
-                  type="button"
-                  key={channel.id}
-                  onClick={() => handleChannelSelect(channel.id)}
-                  className={`flex-shrink-0 transition-all cursor-pointer duration-200 ${selectedChannelId === channel.id ? '' : ''
-                    }`}
-                >
-                  <div className={`flex flex-col items-center gap-2 p-2 rounded-lg transition-colors ${selectedChannelId === channel.id
-                    ? 'bg-blue-50 border-2 border-blue-200'
-                    : 'hover:bg-gray-100 border-2 border-transparent'
-                    }`}>
-                    <div className="relative cursor-pointer">
-                      <Avatar className="w-12 h-12">
-                        <AvatarFallback>{channel.name.slice(0, 1)}</AvatarFallback>
-                      </Avatar>
-                      {channel.isVerified && (
-                        <CheckCircle className="absolute -bottom-1 -right-1 w-4 h-4 text-blue-600 bg-white rounded-full" />
-                      )}
-                    </div>
-                    <span className={`text-xs text-center max-w-16 truncate font-medium ${selectedChannelId === channel.id ? 'text-blue-600' : 'text-gray-600'
-                      }`}>
-                      {channel.name}
-                    </span>
+                {displayedChannels.map((channel) => (
+                  <div key={channel.id} className="relative flex-shrink-0 group">
+                    <button
+                      type="button"
+                      onClick={() => handleChannelSelect(channel.id)}
+                      className="transition-all cursor-pointer duration-200"
+                    >
+                      <div className={`flex flex-col items-center gap-2 p-2 rounded-lg transition-colors ${selectedChannelId === channel.id
+                        ? 'bg-blue-50 border-2 border-blue-200'
+                        : 'hover:bg-gray-100 border-2 border-transparent'
+                        }`}>
+                        <div className="relative cursor-pointer">
+                          <Avatar className="w-12 h-12">
+                            <AvatarFallback className="font-semibold text-xl bg-gray-200 text-red-600">{channel.username[0].toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          {channel.isVerified && (
+                            <CheckCircle className="absolute -bottom-1 -right-1 w-4 h-4 text-red-600 bg-white rounded-full" />
+                          )}
+                        </div>
+                        <span className={`text-xs text-center max-w-16 truncate font-medium ${selectedChannelId === channel.id ? 'text-blue-600' : 'text-gray-600'
+                          }`}>
+                          {channel.username}
+                        </span>
+                      </div>
+                    </button>
+                    
                   </div>
-                </button>
-              ))}
+                ))}
 
                 {subscriptions.length > 7 && (
                   <Button
@@ -338,7 +339,7 @@ const Subscriptions = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar className="w-10 h-10">
-                    <AvatarFallback>{selectedChannel.name.slice(0, 1)}</AvatarFallback>
+                    <AvatarFallback className="font-semibold text-xl text-blue-600">{selectedChannel.username[0].toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <div>
                     <div className="flex items-center gap-2">
@@ -448,32 +449,113 @@ const Subscriptions = () => {
                   </div>
                 )}
 
-        {filteredVideos.length === 0 && (
-          <div className="text-center py-12">
-            <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-              {selectedChannel ? (
-                <Avatar className="w-16 h-16">
-                  <AvatarFallback className="text-lg">{selectedChannel.name.slice(0, 1)}</AvatarFallback>
-                </Avatar>
-              ) : (
-                <Bell className="w-8 h-8 text-gray-400" />
-              )}
-            </div>
-            <h3 className="text-lg font-medium mb-2">
-              {selectedChannel ? `No videos from ${selectedChannel.name}` : 'No videos found'}
-            </h3>
-            <p className="text-gray-600 mb-4">
-              {selectedChannel
-                ? `Try adjusting your filters or check back later for new content from ${selectedChannel.name}.`
-                : 'Try adjusting your filters or check back later for new content.'
-              }
-            </p>
-            {selectedChannel && (
-              <Button variant="outline" onClick={handleAllChannels}>
-                View All Channels
-              </Button>
+                {/* Load More / Show Less controls */}
+                {videos.length >= 10 && (
+                  <div className="flex justify-center gap-4 mt-8">
+                    {hasMore && (
+                      <Button
+                        variant="outline"
+                        onClick={handleLoadMore}
+                        disabled={loadingMore}
+                      >
+                        {loadingMore ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                        Load More
+                      </Button>
+                    )}
+                    {videos.length > 10 && (
+                      <Button
+                        variant="ghost"
+                        onClick={handleShowLess}
+                      >
+                        Show Less
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </>
             )}
-          </div>
+
+            {/* Show suggested videos if no subscriptions */}
+            {subscriptions.length === 0 && suggestedVideos.length > 0 && (
+              <>
+                <div className="mb-6 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+                  <h2 className="font-bold text-blue-900 mb-2 text-lg">Welcome! Discover Amazing Content</h2>
+                  <p className="text-blue-700 text-sm mb-3">
+                    You haven't subscribed to any creators yet. Here are some popular videos to get you started!
+                  </p>
+                  <p className="text-blue-600 text-xs">
+                    💡 Tip: Click the Subscribe button on videos you enjoy to see more content from those creators.
+                  </p>
+                </div>
+                
+                {viewMode === 'grid' ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {suggestedVideos.map((video) => (
+                      <VideoCard 
+                        key={video.id} 
+                        video={video} 
+                        showChannelInfo={true}
+                        formatDuration={formatDuration}
+                        formatTimeAgo={formatTimeAgo}
+                        formatViews={formatViews}
+                        showSubscribeButton={true}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {suggestedVideos.map((video) => (
+                      <VideoListItem 
+                        key={video.id} 
+                        video={video} 
+                        showChannelInfo={true}
+                        formatDuration={formatDuration}
+                        formatTimeAgo={formatTimeAgo}
+                        formatViews={formatViews}
+                        showSubscribeButton={true}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Empty state */}
+            {((subscriptions.length > 0 && videos.length === 0) || (subscriptions.length === 0 && suggestedVideos.length === 0)) && (
+              <div className="text-center py-12">
+                <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                  {selectedChannel ? (
+                    <Avatar className="w-16 h-16">
+                      <AvatarFallback className="font-semibold text-red-600">{selectedChannel.username[0].toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <Bell className="w-8 h-8 text-gray-400" />
+                  )}
+                </div>
+                <h3 className="text-lg font-medium mb-2">
+                  {subscriptions.length === 0 
+                    ? 'No videos available'
+                    : selectedChannel 
+                    ? `No videos from ${selectedChannel.username}` 
+                    : 'No videos found'
+                  }
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  {subscriptions.length === 0
+                    ? 'Start by subscribing to some creators to see their latest videos here.'
+                    : selectedChannel
+                    ? `Try adjusting your filters or check back later for new content from ${selectedChannel.username}.`
+                    : 'Try adjusting your filters or check back later for new content.'
+                  }
+                </p>
+                {selectedChannel && (
+                  <Button variant="outline" onClick={handleAllChannels}>
+                    View All Channels
+                  </Button>
+                )}
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>
@@ -518,14 +600,15 @@ const VideoCard = ({
         </div>
       </Link>
 
-        <div className="space-y-2">
-          <div className={`flex gap-3 ${showChannelInfo && channelInfo ? '' : 'justify-start'}`}>
-            {showChannelInfo && channelInfo && (
-              <Avatar className="w-9 h-9 flex-shrink-0">
-                <AvatarFallback>{channelInfo.name.slice(0, 1)}</AvatarFallback>
-              </Avatar>
-            )}
-            <div className="min-w-0 flex-1">
+      <div className="space-y-2">
+        <div className={`flex gap-3 ${showChannelInfo ? '' : 'justify-start'}`}>
+          {showChannelInfo && (
+            <Avatar className="w-9 h-9 flex-shrink-0">
+              <AvatarFallback className="font-semibold bg-gray-200 text-black">{video.uploader.username[0].toUpperCase()}</AvatarFallback>
+            </Avatar>
+          )}
+          <div className="min-w-0 flex-1">
+            <Link href={`/watch/${video.id}`} className="group">
               <h3 className="font-medium line-clamp-2 group-hover:text-blue-600 transition-colors">
                 {video.title}
               </h3>
@@ -601,7 +684,7 @@ const VideoListItem = ({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Avatar className="w-5 h-5 md:w-6 md:h-6">
-                <AvatarFallback className="text-xs">{channelInfo.name.slice(0, 1)}</AvatarFallback>
+                <AvatarFallback className="font-semibold bg-gray-200 text-black">{video.uploader.username[0].toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="flex items-center gap-1">
                 <Link href={`/channel/${video.uploader.id}`} className="hover:text-blue-600 transition-colors">
