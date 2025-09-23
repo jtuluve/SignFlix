@@ -43,6 +43,7 @@ model Video {
   description  String?
   videoUrl     String
   thumbnailUrl String?
+  captionUrl String?
   duration     Int?
   views        Int      @default(0)
   likes        Int      @default(0)
