@@ -21,12 +21,9 @@ import {
   Upload,
   Home,
   FileText,
-  Library,
   Clock,
-  Heart,
   User,
   Plus,
-  ChevronRight,
 } from "lucide-react";
 import VoiceSearchDialog from "@/components/common/voice-search-dialog";
 import SignLanguageDialog from "@/components/common/sign-language-dialog";
@@ -448,18 +445,6 @@ export default function Navbar() {
                 }`}
               />
               <Link
-                href={"/library"}
-                className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-100"
-                onClick={closeSidebar}
-              >
-                <Library className="w-6 h-6 flex-shrink-0" />
-                <span
-                  className={`${!isSidebarOpen ? "md:hidden xl:hidden" : ""}`}
-                >
-                  Library
-                </span>
-              </Link>
-              <Link
                 href={"/history"}
                 className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-100"
                 onClick={closeSidebar}
@@ -511,14 +496,14 @@ export default function Navbar() {
             <span className="text-xs font-medium text-gray-600">Studio</span>
           </Link>
           <Link
-            href="/library"
+            href="/history"
             className={`flex flex-1 flex-col items-center justify-center py-2 ${
-              activeTab === "library" ? "text-red-600" : "text-gray-600"
+              activeTab === "history" ? "text-red-600" : "text-gray-600"
             }`}
-            onClick={() => setActiveTab("library")}
+            onClick={() => setActiveTab("history")}
           >
-            <Heart className="h-5 w-5 mb-0.5" />
-            <span className="text-xs font-medium">Library</span>
+            <Clock className="h-5 w-5 mb-0.5" />
+            <span className="text-xs font-medium">history</span>
           </Link>
           {session?.user ? (
             <Link
