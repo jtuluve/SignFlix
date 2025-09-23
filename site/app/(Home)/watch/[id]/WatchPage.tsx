@@ -5,32 +5,41 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import LikeButton from "@/components/watch/like-button"
 import WatchView from "@/components/watch/watch-view"
-import { updateSubscriberCount } from "@/utils/subscription"
-import { getUserByEmail } from "@/utils/user"
+import { checkSubscription, toggleSubscription } from "@/utils/subscription"
 import { getVideobyId, incrementVideoViews } from "@/utils/video"
 import { useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
 
 export default function WatchPage({ video, channel, videoUrl, captionUrl, signVideoUrl, posterUrl, title, views, time, description, id }) {
-    const session = useSession();
+    const { data: session, status } = useSession();
     const [syncMode, setSyncMode] = useState<"adjust" | "pause">("pause");
+    const [isSubscribed, setIsSubscribed] = useState(false);
+    const [subscribersCount, setSubscribersCount] = useState(channel?.subscribers ?? 0);
 
     useEffect(() => {
         incrementVideoViews(id);
     }, [id]);
 
-    async function onSubscribe() {
-        if(!session?.data?.user){
+    useEffect(() => {
+      if (status === "authenticated" && session?.user?.id && channel?.id) {
+        checkSubscription(session.user.id, channel.id).then(sub => {
+          setIsSubscribed(!!sub);
+        });
+      }
+    }, [status, session?.user?.id, channel?.id]);
+
+    async function onToggleSubscribe() {
+        if(status !== "authenticated" || !session?.user?.id){
           window.location.href = "/signin";
           return;
         }
-        const creator = await getVideobyId(id);
-        const user = await getUserByEmail(session.data.user.email);
-        if(!creator || !user){
+        if (!channel?.id) {
           return;
         }
-        await updateSubscriberCount(creator.uploaderId,user.id, "subscribe");
-      
+
+        const result = await toggleSubscription(channel.id, session.user.id);
+        setIsSubscribed(result.subscribed);
+        setSubscribersCount(prevCount => prevCount + (result.subscribed ? 1 : -1));
       }
 
     return (
@@ -71,11 +80,13 @@ export default function WatchPage({ video, channel, videoUrl, captionUrl, signVi
                   </Avatar>
                   <div>
                     <div className="font-bold text-lg">{channel?.name ?? "Unknown Channel"}</div>
-                    <div className="text-sm text-muted-foreground">{Math.max(0, channel?.subscribers ?? 0)} subscribers</div>
+                    <div className="text-sm text-muted-foreground">{Math.max(0, subscribersCount)} subscribers</div>
                   </div>
                 </div>
                 {session?.data?.user?.id !== video.uploaderId && (
-                    <Button className="shrink-0" size="lg" onClick={onSubscribe}>Subscribe</Button>
+                    <Button className="shrink-0" size="lg" onClick={onToggleSubscribe}>
+                      {isSubscribed ? "Subscribed" : "Subscribe"}
+                    </Button>
                 )}
               </div>
             </section>
