@@ -1,46 +1,32 @@
+
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { ThumbsUp } from "lucide-react"
+import { likeVideo, unlikeVideo } from "@/utils/likes"
 
 type LikeButtonProps = {
   videoId: string
   baseCount?: number
-  initialLiked?: boolean
 }
 
-export default function LikeButton({ videoId, baseCount = 0, initialLiked = false }: LikeButtonProps) {
-  const storageKey = useMemo(() => `like:video:${videoId}`, [videoId])
-  const [liked, setLiked] = useState<boolean>(initialLiked)
-  const [count, setCount] = useState<number>(baseCount + (initialLiked ? 1 : 0))
+export default function LikeButton({ videoId, baseCount = 0 }: LikeButtonProps) {
+  const [liked, setLiked] = useState(false);
+  const [count, setCount] = useState(baseCount);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    try {
-      const v = window.localStorage.getItem(storageKey)
-      if (v === "1" && !liked) {
-        setLiked(true)
-        setCount((c) => c + (initialLiked ? 0 : 1))
-      }
-    } catch {}
-  }, [storageKey, liked, initialLiked])
 
   async function toggle() {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      setLiked((prev) => {
-        const next = !prev;
-        setCount((c) => c + (next ? 1 : -1));
-        try {
-          if (next) window.localStorage.setItem(storageKey, "1");
-          else window.localStorage.removeItem(storageKey);
-        } catch {}
-        return next;
-      });
+        if (liked) {
+            await unlikeVideo(videoId);
+            setCount(c => c - 1);
+        } else {
+            await likeVideo(videoId);
+            setCount(c => c + 1);
+        }
+        setLiked(!liked);
     } catch (error) {
       console.error("Failed to like video:", error);
     } finally {

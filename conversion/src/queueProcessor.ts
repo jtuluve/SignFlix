@@ -8,7 +8,7 @@ import { timeStringToSeconds } from './helpers/utils';
 import { uploadToBlob } from "./helpers/blob";
 import * as fs from "fs";
 
-const CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING;
+
 const QUEUE_NAME = process.env.VIDEO_QUEUE_NAME || "videos";
 
 async function processSingleVideo(videoId: string): Promise<void> {
@@ -22,6 +22,9 @@ async function processSingleVideo(videoId: string): Promise<void> {
     const generatedVideos: string[] = [];
     const timingJson: Array<{ start_time: number; end_time: number; videoPath: string }> =
       [];
+      if(!fs.existsSync("/tmp")){
+        fs.mkdirSync("/tmp");
+      }
 
     for (const caption of captions) {
       // 1. Caption -> Pose file
@@ -37,7 +40,7 @@ async function processSingleVideo(videoId: string): Promise<void> {
         // convert previous mergedPoseJson into video if exists
         if (mergedPoseJson) {
           const videoPath = path.join("/tmp", `pose_${Date.now()}.mp4`);
-          await poseToVideo(mergedPoseJson, videoPath);
+          await poseJsonToVideo(mergedPoseJson, videoPath);
           generatedVideos.push(videoPath);
           timingJson.push({
             start_time: timeStringToSeconds(caption.start_time),
@@ -47,6 +50,8 @@ async function processSingleVideo(videoId: string): Promise<void> {
         }
         mergedPoseJson = poseJson;
       }
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
     // flush last one
@@ -84,8 +89,9 @@ async function processSingleVideo(videoId: string): Promise<void> {
 }
 
 export async function processVideoFromQueue(): Promise<void> {
+  const CONNECTION_STRING = process.env.AZURE_QUEUE_CONNECTION_STRING;
   if (!CONNECTION_STRING) {
-    console.error("AZURE_STORAGE_CONNECTION_STRING is not set.");
+    console.error("AZURE_QUEUE_CONNECTION_STRING is not set.");
     return;
   }
 
@@ -104,7 +110,7 @@ export async function processVideoFromQueue(): Promise<void> {
     }
 
     // Receive messages
-    const response = await queueClient.receiveMessages({ numberOfMessages: 1 }); // Process one message at a time
+    const response = await queueClient.receiveMessages({});
 
     for (const message of response.receivedMessageItems) {
       try {

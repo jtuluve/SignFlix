@@ -14,11 +14,15 @@
   "dependencies": {
     "@azure/storage-blob": "^12.28.0",
     "@azure/storage-queue": "^12.27.0",
+    "@types/node-fetch": "^2.6.13",
+    "dotenv": "^17.2.2",
     "ffmpeg-static": "^5.2.0",
+    "node-fetch": "^3.3.2",
     "os": "^0.1.2",
+    "parse-srt": "^1.0.0-alpha",
     "pg": "^8.16.3",
     "pose-format": "^1.6.0",
-    "pose-to-video": "^1.1.0"
+    "pose-to-video": "^1.1.7"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
