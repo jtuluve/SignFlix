@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { searchVideos } from "@/utils/video";
+import { searchVideos, getVideos } from "@/utils/video";
+import { type Video, type User } from "@prisma/client";
 
 function formatNumberShort(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
@@ -34,21 +35,30 @@ function formatDuration(seconds?: number | null): string {
   return h > 0 ? `${h}:${mm}:${ss}` : `${m}:${ss}`;
 }
 
+type SearchedVideo = Video & { uploader: User };
+
 export default async function Page({
   searchParams,
 }: {
   searchParams: { q?: string };
 }) {
   const q = (searchParams?.q ?? "").toString().trim();
+  let noResults = false;
 
-  let dbVideos: Awaited<ReturnType<typeof searchVideos>> = [] as any;
+  let dbVideos: SearchedVideo[] = [];
   if (q) {
     try {
-      dbVideos = await searchVideos(q);
+      dbVideos = await searchVideos(q) as SearchedVideo[];
+      if (dbVideos.length === 0) {
+        noResults = true;
+        dbVideos = await getVideos() as SearchedVideo[];
+      }
     } catch (e) {
-      // If the util throws for invalid query length, just keep empty results
-      dbVideos = [] as any;
+      dbVideos = await getVideos() as SearchedVideo[];
+      noResults = true;
     }
+  } else {
+    dbVideos = await getVideos() as SearchedVideo[];
   }
 
   const items = (dbVideos || []).map((v) => {
@@ -72,6 +82,9 @@ export default async function Page({
               <h2 className="text-lg font-medium mb-4">
                 Search results for: <span className="font-semibold">{q}</span>
               </h2>
+            )}
+            {noResults && (
+                <div className="col-span-full text-sm text-red-600 mb-4">No results found for your query. Showing latest videos instead.</div>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {items.map((video) => (
@@ -100,9 +113,6 @@ export default async function Page({
               ))}
               {!q && items.length === 0 && (
                 <div className="col-span-full text-sm text-gray-600">Enter a search query to see results.</div>
-              )}
-              {q && items.length === 0 && (
-                <div className="col-span-full text-sm text-gray-600">No results found.</div>
               )}
             </div>
           </div>

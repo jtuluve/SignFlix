@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Video, CirclePause, Play, AlertCircle, RefreshCw } from "lucide-react"
+import { Video, CirclePause, Play, AlertCircle, RefreshCw, Search } from "lucide-react"
 import { useSignLanguage } from "@/hooks/use-sign-language"
 
 type Props = {
@@ -247,36 +247,19 @@ export default function SignLanguageDialog({ isCameraModalOpen, setIsCameraModal
           </div>
 
           <div className="flex gap-2 justify-center flex-wrap">
-            {streaming ? (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  console.log("User clicked pause")
-                  stopRecognition()
-                  setStreaming(false)
-                }}
-              >
-                <CirclePause className="h-4 w-4 mr-2" />
-                Pause
-              </Button>
-            ) : (
-              <Button
-                variant="default"
-                onClick={async () => {
-                  try {
-                    console.log("User clicked start camera")
-                    await startRecognition()
-                    setStreaming(true)
-                  } catch (err) {
-                    console.error("Failed to start from button click:", err)
-                  }
-                }}
-                disabled={loading}
-              >
-                <Play className="h-4 w-4 mr-2" />
-                {loading ? "Loading..." : "Start Camera"}
-              </Button>
-            )}
+            <Button
+              variant="default"
+              onClick={() => {
+                stopRecognition();
+                setStreaming(false);
+                onResult(lastWord);
+                handleClose(false);
+              }}
+              disabled={!lastWord}
+            >
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </Button>
             <Button variant="outline" onClick={() => handleClose(false)}>
               Close
             </Button>

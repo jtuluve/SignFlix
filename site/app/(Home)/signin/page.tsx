@@ -1,8 +1,7 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import signUp from "@/lib/signUp";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export default function AuthPage() {
     const [name, setName] = useState("");
@@ -18,12 +18,17 @@ export default function AuthPage() {
     const [errorMessage, setErrorMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
+    const { data: session } = useSession();
+
     useEffect(() => {
+        if (session) {
+            redirect("/");
+        }
         document.body.style.overflow = "hidden";
         return () => {
             document.body.style.overflow = "auto";
         };
-    }, []);
+    }, [session]);
 
     const handleSignIn = async () => {
         setIsLoading(true);
