@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Upload, Video, FileText, CheckCircle, X, Subtitles, Plus, Save, Trash2 } from "lucide-react";
+import uploadVideo from "@/lib/uploadVideo";
 
 export type Caption = {
   id: string;
@@ -25,7 +26,7 @@ export default function UploadSection() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Prisma Video model fields (minus videoUrl): title, description?, thumbnailUrl?, captionUrl?, duration?, tags[], category?
-  const [videoDetails, setVideoDetails] = useState({
+  const [metadata, setmetadata] = useState({
     title: "",
     description: "",
     tags: "",
@@ -53,38 +54,45 @@ export default function UploadSection() {
     if (e.target.files?.[0]) setUploadedFile(e.target.files[0]);
   };
 
-  const handlePublish = () => {
+
+  const handlePublish = async() => {
     if (!uploadedFile) {
       alert("Please select a video file to upload");
-      return;
+    if(!captionFile){
+      alert("please select a caption file to upload")
     }
-
-    // Convert comma-separated tags to array
-    const tags = videoDetails.tags
+    const tags = metadata.tags
       .split(",")
       .map((t) => t.trim())
       .filter(Boolean);
 
+    const data = {...metadata,tags}
+    await uploadVideo({data, videoFile: uploadedFile, captionFile, thumbnailFile});
+      return;
+    }
+
+    // Convert comma-separated tags to array
+
     // Stub: videoUrl will be produced by your upload/storage pipeline; we don't expose an input for it
-    console.log("Publishing video (schema-aligned)", {
-      file: uploadedFile,
-      details: {
-        title: videoDetails.title,
-        description: videoDetails.description || null,
-        thumbnailFile,
-        captionFile,
-        tags,
-        category: videoDetails.category || null,
-        // duration to be computed after upload/processing
-      },
-    });
+    // console.log("Publishing video (schema-aligned)", {
+    //   file: uploadedFile,
+    //   details: {
+    //     title: metadata.title,
+    //     description: metadata.description || null,
+    //     thumbnailFile,
+    //     captionFile,
+    //     tags,
+    //     category: metadata.category || null,
+    //     // duration to be computed after upload/processing
+    //   },
+    // });
     alert("Video submitted (stub). Wire this to your upload + createVideo() server action.");
 
     // reset
     setUploadedFile(null);
     setThumbnailFile(null);
     setCaptionFile(null);
-    setVideoDetails({ title: "", description: "", tags: "", category: "" });
+    setmetadata({ title: "", description: "", tags: "", category: "" });
   };
 
   return (
@@ -143,8 +151,8 @@ export default function UploadSection() {
               </label>
               <Input
                 id="title"
-                value={videoDetails.title}
-                onChange={(e) => setVideoDetails({ ...videoDetails, title: e.target.value })}
+                value={metadata.title}
+                onChange={(e) => setmetadata({ ...metadata, title: e.target.value })}
                 placeholder="Enter video title"
               />
             </div>
@@ -154,8 +162,8 @@ export default function UploadSection() {
               </label>
               <Textarea
                 id="desc"
-                value={videoDetails.description}
-                onChange={(e) => setVideoDetails({ ...videoDetails, description: e.target.value })}
+                value={metadata.description}
+                onChange={(e) => setmetadata({ ...metadata, description: e.target.value })}
                 placeholder="Tell viewers about your video"
                 rows={4}
               />
@@ -167,8 +175,8 @@ export default function UploadSection() {
                 </label>
                 <Input
                   id="tags"
-                  value={videoDetails.tags}
-                  onChange={(e) => setVideoDetails({ ...videoDetails, tags: e.target.value })}
+                  value={metadata.tags}
+                  onChange={(e) => setmetadata({ ...metadata, tags: e.target.value })}
                   placeholder="Comma-separated (e.g. asl, tutorial, beginner)"
                 />
                 <p className="text-xs text-gray-500 mt-1">Stored as string[]</p>
@@ -179,8 +187,8 @@ export default function UploadSection() {
                 </label>
                 <select
                   id="category"
-                  value={videoDetails.category}
-                  onChange={(e) => setVideoDetails({ ...videoDetails, category: e.target.value })}
+                  value={metadata.category}
+                  onChange={(e) => setmetadata({ ...metadata, category: e.target.value })}
                   className="w-full p-2 border border-gray-300 rounded-md"
                 >
                   <option value="">Select category</option>
