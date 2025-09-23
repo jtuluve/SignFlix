@@ -42,6 +42,7 @@ export default function Navbar() {
   const [isClient, setIsClient] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const { data: session } = useSession();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
@@ -358,13 +359,15 @@ export default function Navbar() {
 
               {session?.user ? (
                 <Button
-                  onClick={() => {
-                    signOut();
+                  onClick={async () => {
+                    setIsSigningOut(true);
+                    await signOut();
                   }}
                   variant="outline"
                   className="h-9 px-3 border-neutral-300 text-neutral-700 hover:bg-neutral-50 text-sm bg-transparent"
+                  disabled={isSigningOut}
                 >
-                  Sign Out
+                  {isSigningOut ? "Signing out..." : "Sign Out"}
                 </Button>
               ) : (
                 <Link

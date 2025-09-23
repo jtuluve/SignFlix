@@ -12,16 +12,27 @@ export default function EditVideoForm({ id }: { id: string }) {
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
   const [category, setCategory] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     // TODO: load video by id via server action or API and set fields
     // For now, leave fields empty
   }, [id]);
 
-  const handleSave = () => {
-    const tagsArr = tags.split(",").map((t) => t.trim()).filter(Boolean);
-    console.log("Updating video", { id, title, description, category, tags: tagsArr });
-    alert("Video details saved (stub)");
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const tagsArr = tags.split(",").map((t) => t.trim()).filter(Boolean);
+      console.log("Updating video", { id, title, description, category, tags: tagsArr });
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      alert("Video details saved (stub)");
+    } catch (error) {
+      console.error("Failed to save video details:", error);
+      alert("Failed to save video details. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -58,7 +69,9 @@ export default function EditVideoForm({ id }: { id: string }) {
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSave}>Save Changes</Button>
+        <Button onClick={handleSave} disabled={isSaving}>
+          {isSaving ? 'Saving...' : 'Save Changes'}
+        </Button>
       </div>
     </div>
   );
