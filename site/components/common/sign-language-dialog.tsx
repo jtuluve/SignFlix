@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Video, CirclePause, Play, AlertCircle, RefreshCw, Search } from "lucide-react"
 import { useSignLanguage } from "@/hooks/use-sign-language"
+import { Skeleton } from "@/components/ui/skeleton"
 
 type Props = {
   isCameraModalOpen: boolean
@@ -152,7 +153,7 @@ export default function SignLanguageDialog({ isCameraModalOpen, setIsCameraModal
             {!cameraReady && !error && (
               <div className="absolute inset-0 bg-gray-900/50 rounded-lg flex items-center justify-center">
                 <div className="text-white text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent mx-auto mb-2"></div>
+                  <Skeleton className="h-8 w-8 rounded-full mx-auto mb-2" />
                   <div className="text-sm">Preparing camera...</div>
                 </div>
               </div>
@@ -162,7 +163,7 @@ export default function SignLanguageDialog({ isCameraModalOpen, setIsCameraModal
           <div className="text-sm text-gray-500">
             {loading ? (
               <div className="flex items-center justify-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                <Skeleton className="h-4 w-4 rounded-full" />
                 "Loading model and camera..."
               </div>
             ) : error ? (
@@ -184,7 +185,7 @@ export default function SignLanguageDialog({ isCameraModalOpen, setIsCameraModal
               aiInitializing ? (
                 <div className="space-y-1">
                   <div className="text-blue-600 font-medium flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
+                    <Skeleton className="h-4 w-4 rounded-full" />
                     AI Initializing...
                   </div>
                   <div className="text-xs text-gray-600">TensorFlow Lite is starting up (first time only)</div>

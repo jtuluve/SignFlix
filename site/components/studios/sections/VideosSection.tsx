@@ -178,7 +178,7 @@ export default function VideosSection() {
                     {hasMore && (
                         <div className="flex justify-center mt-8">
                             <Button onClick={handleLoadMore} disabled={isLoading}>
-                                {isLoading ? "Loading..." : "Load More"}
+                                {isLoading ? <Skeleton className="h-4 w-20" /> : "Load More"}
                             </Button>
                         </div>
                     )}

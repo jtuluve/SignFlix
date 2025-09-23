@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
@@ -7,8 +5,8 @@ import {
   toggleSubscriptionAction, 
   isSubscribedToCreatorAction 
 } from "@/lib/subscriptions";
-import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface SubscribeButtonProps {
   creatorId: string;
@@ -102,7 +100,7 @@ export function SubscribeButton({
         className={className}
         disabled={true}
       >
-        <Loader2 className="w-4 h-4 animate-spin" />
+        <Skeleton className="h-4 w-20" />
       </Button>
     );
   }
@@ -117,7 +115,7 @@ export function SubscribeButton({
         disabled={loading}
       >
         {loading ? (
-          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+          <Skeleton className="h-4 w-20" />
         ) : null}
         {isSubscribed ? "Unsubscribe" : "Subscribe"}
       </Button>

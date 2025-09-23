@@ -1,5 +1,3 @@
-"use client"
-
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -9,6 +7,7 @@ import { Bookmark, CheckCircle, Grid3X3, List, Play, Clock, Heart } from 'lucide
 // import { getlikedVideos, type Video } from "@/data/draft";
 import { getLikedVideos } from "@/lib/library";
 import { useSession } from "next-auth/react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 type Video = {
@@ -42,7 +41,17 @@ const Library = () => {
   },[status]);
 
   if (status === 'loading') {
-    return <div>Loading...</div>
+    return (
+      <div className="p-4 space-y-4">
+        <Skeleton className="h-10 w-48" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <Skeleton className="aspect-video rounded-lg" />
+          <Skeleton className="aspect-video rounded-lg" />
+          <Skeleton className="aspect-video rounded-lg" />
+          <Skeleton className="aspect-video rounded-lg" />
+        </div>
+      </div>
+    );
   }
 
   if (status === 'unauthenticated') {
