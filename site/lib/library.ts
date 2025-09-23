@@ -1,3 +1,4 @@
+'use server';
 // src/utils/likedVideos.ts
 import { db } from "@/utils/prisma"; // your Prisma client
 

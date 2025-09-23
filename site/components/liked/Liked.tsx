@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bookmark, CheckCircle, Grid3X3, List, Play, Clock } from 'lucide-react';
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Bookmark, CheckCircle, Grid3X3, List, Play, Clock, Heart } from 'lucide-react';
 // import { getlikedVideos, type Video } from "@/data/draft";
 import { getLikedVideos } from "@/lib/library";
 import { useSession } from "next-auth/react";
@@ -45,10 +45,10 @@ const Library = () => {
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
-              <Clock className="w-5 h-5 text-white" />
+              <Heart className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Watch Later</h1>
+              <h1 className="text-2xl font-bold">Liked</h1>
               <p className="text-gray-600 text-sm">
                 {likedVideos.length} video{likedVideos.length !== 1 ? 's' : ''} saved
               </p>
