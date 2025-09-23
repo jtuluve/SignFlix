@@ -1,4 +1,5 @@
 export const timeStringToSeconds = (timeString: string): number => {
+  if (typeof timeString !== "string") return timeString;
   const [hours, minutes, seconds] = timeString.split(":");
   const [sec, ms] = seconds.split(",");
   return (

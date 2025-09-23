@@ -1,9 +1,11 @@
-import { Pose } from "pose-format";
+import { Pose } from "pose-to-video/src/pose-format";
 import * as fs from "fs";
 import path = require("path");
-import * as os from "os"
+import * as os from "os";
 import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
+import parseSRT from "parse-srt";
+import fetch from "node-fetch";
 
 export type srt = {
   sequence: number;
@@ -13,25 +15,17 @@ export type srt = {
 };
 
 export async function downloadCaptions(captionUrl: string): Promise<srt[]> {
-  const response = await fetch(captionUrl);
+  const response = await fetchWithRetry(captionUrl);
   const inputSrt = await response.text();
-  const srtString = inputSrt.replace(/\r/g, "").split("\n\n");
 
-  return srtString
-    .map((item) => {
-      const regex = /(\d+)\n([\d:,]+)\s*-+>\s*([\d:,]+)(?:\n([\S\s]*))?/g;
-      const match = regex.exec(item);
-      if (match === null) {
-        console.log("Invalid SRT format:", item);
-        return;
-      }
-      const sequence = parseInt(match[1]);
-      const start_time = match[2].trim();
-      const end_time = match[3].trim();
-      const caption = match[4]?.trim() || "";
-      return { sequence, start_time, end_time, caption };
-    })
-    .filter((v) => v !== undefined);
+  return parseSRT(inputSrt).map((srt)=>{
+    return {
+      sequence: srt.id,
+      start_time: srt.start,
+      end_time: srt.end,
+      caption: srt.text
+    }
+  });
 }
 
 export function headersAreSame(a: Pose, b: Pose): boolean {
@@ -61,10 +55,13 @@ export function headersAreSame(a: Pose, b: Pose): boolean {
 }
 
 export async function textToPoseFile(text: string) {
-  const res = await fetch(
-    `${process.env.API_URL}?text=${encodeURI(text)}&spoken=en&signed=ase`
+  const res = await fetchWithRetry(
+    `${process.env.API_URL}/spoken_text_to_signed_pose?text=${encodeURI(
+      text
+    )}&spoken=en&signed=ase`
   );
   if (!res.ok) {
+    console.log(res);
     throw new Error("Failed to fetch pose file");
   }
 
@@ -73,17 +70,22 @@ export async function textToPoseFile(text: string) {
   return poseFileBlob;
 }
 
-export function mergePoseJson(dest: any, src: any): any {
+export function mergePoseJson(dest: Pose, src: Pose): any {
   if (!dest || !src) throw new Error("dest and src required");
-  if (!headersAreSame(dest, src)) throw new Error("Pose headers incompatible for merge");
-
-  dest.body.frames = dest.body.frames.concat(src.body.frames || []);
+  if (!headersAreSame(dest, src))
+    throw new Error("Pose headers incompatible for merge");
+  for (let i=0;i<src.body.frames.length;i++) {
+    dest.body.frames.push(src.body.frames[i]);
+  }
   dest.body._frames = dest.body.frames.length;
 
   return dest;
 }
 
-export async function mergeVideos(videoPaths: string[], outputPath: string): Promise<void> {
+export async function mergeVideos(
+  videoPaths: string[],
+  outputPath: string
+): Promise<void> {
   if (!videoPaths || videoPaths.length === 0) {
     throw new Error("No videos to merge");
   }
@@ -95,38 +97,99 @@ export async function mergeVideos(videoPaths: string[], outputPath: string): Pro
 
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "ffmerge-"));
   const listPath = path.join(tmpDir, "inputs.txt");
-  const data = videoPaths.map(p => `file '${p.replace(/'/g, "'\\''")}'`).join("\n");
+  const data = videoPaths
+    .map((p) => `file '${p.replace(/'/g, "'\\''")}'`)
+    .join("\n");
   fs.writeFileSync(listPath, data, "utf8");
 
   const ff = ffmpegPath || "ffmpeg";
-  await execCommand(ff, ["-y", "-f", "concat", "-safe", "0", "-i", listPath, "-c", "copy", outputPath], { timeout: 60 * 60_000 });
+  await execCommand(
+    ff,
+    [
+      "-y",
+      "-f",
+      "concat",
+      "-safe",
+      "0",
+      "-i",
+      listPath,
+      "-c",
+      "copy",
+      outputPath,
+    ],
+    { timeout: 60 * 60_000 }
+  );
 
   // cleanup
-  try { fs.unlinkSync(listPath); } catch (e) {}
-  try { fs.rmdirSync(tmpDir); } catch (e) {}
+  try {
+    fs.unlinkSync(listPath);
+  } catch (e) {}
+  try {
+    fs.rmdirSync(tmpDir);
+  } catch (e) {}
 }
 
-function execCommand(cmd: string, args: string[], options: { timeout?: number } = {}): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const p = spawn(cmd, args, { stdio: "inherit" });
-    const to = options.timeout ?? 0;
-    let timedOut = false;
-    let timer: NodeJS.Timeout | undefined;
-    if (to > 0) {
-      timer = setTimeout(() => {
-        timedOut = true;
-        p.kill("SIGKILL");
-      }, to);
+async function fetchWithRetry(url: string, options: any = {}, retries = 3, delay = 2000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response;
+    } catch (error) {
+      console.log(`Attempt ${i + 1} failed. Retrying in ${delay / 1000} seconds...`);
+      if (i < retries - 1) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        throw error;
+      }
     }
-    p.on("error", err => {
-      if (timer) clearTimeout(timer);
-      reject(err);
-    });
-    p.on("exit", code => {
-      if (timer) clearTimeout(timer);
-      if (timedOut) return reject(new Error("Process timed out"));
-      if (code === 0) resolve();
-      else reject(new Error(`${cmd} exited with code ${code}`));
-    });
-  });
+  }
+}
+
+async function execCommand(
+  cmd: string,
+  args: string[],
+  options: { timeout?: number } = {  timeout: 1000 }
+): Promise<void> {
+  let attempts = 0;
+  const maxAttempts = 5;
+  const delay = 1000; // 1 second
+
+  while (attempts < maxAttempts) {
+    try {
+      return await new Promise((resolve, reject) => {
+        const p = spawn(cmd, args, { stdio: "inherit", shell: process.platform === "win32" });
+        const to = options.timeout ?? 0;
+        let timedOut = false;
+        let timer: NodeJS.Timeout | undefined;
+        if (to > 0) {
+          timer = setTimeout(() => {
+            timedOut = true;
+            p.kill("SIGKILL");
+          }, to);
+        }
+        p.on("error", (err) => {
+          if (timer) clearTimeout(timer);
+          reject(err);
+        });
+        p.on("exit", (code) => {
+          if (timer) clearTimeout(timer);
+          if (timedOut) return reject(new Error("Process timed out"));
+          if (code === 0) resolve();
+          else reject(new Error(`${cmd} exited with code ${code}`));
+        });
+      });
+    } catch (error) {
+      attempts++;
+      if (attempts >= maxAttempts) {
+        throw error;
+      }
+      console.log(
+        `Attempt ${attempts} failed. Retrying in ${delay / 1000} seconds...`
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
 }

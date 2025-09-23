@@ -4,10 +4,14 @@ import path = require("path");
 import * as fs from "fs"
 
 export async function uploadToBlob(containerName: string, filePath: string): Promise<string> {
-  const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
-  if (!connectionString) throw new Error("AzureWebJobsStorage is not set in environment");
+  const storageAccount = process.env.AZURE_STORAGE_ACCOUNT;
+  const sasToken = process.env.AZURE_BLOB_SAS_TOKEN;
 
-  const blobService = BlobServiceClient.fromConnectionString(connectionString);
+  if (!storageAccount || !sasToken) {
+    throw new Error("AZURE_STORAGE_ACCOUNT and AZURE_BLOB_SAS_TOKEN must be set in environment");
+  }
+
+  const blobService = new BlobServiceClient(`https://${storageAccount}.blob.core.windows.net?${sasToken}`);
   const client = blobService.getContainerClient(containerName);
   await client.createIfNotExists();
 

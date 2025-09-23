@@ -39,7 +39,7 @@ export async function getVideoById(id: string) {
 }
 
 
-export async function getVideosByUser(uploaderId: string) {
+export async function getVideosByUser(uploaderId: string, take?: number, skip?: number) {
   return await db.video.findMany({
     where: { uploaderId },
     include: {
@@ -51,6 +51,8 @@ export async function getVideosByUser(uploaderId: string) {
       },
     },
     orderBy: { createdAt: "desc" },
+    take,
+    skip,
   });
 }
 
