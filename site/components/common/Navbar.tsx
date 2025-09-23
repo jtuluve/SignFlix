@@ -21,9 +21,12 @@ import {
   Upload,
   Home,
   FileText,
+  Library,
   Clock,
+  Heart,
   User,
   Plus,
+  ChevronRight,
 } from "lucide-react";
 import VoiceSearchDialog from "@/components/common/voice-search-dialog";
 import SignLanguageDialog from "@/components/common/sign-language-dialog";
@@ -445,6 +448,18 @@ export default function Navbar() {
                 }`}
               />
               <Link
+                href={"/liked"}
+                className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-100"
+                onClick={closeSidebar}
+              >
+                <Heart className="w-6 h-6 flex-shrink-0" />
+                <span
+                  className={`${!isSidebarOpen ? "md:hidden xl:hidden" : ""}`}
+                >
+                  Liked
+                </span>
+              </Link>
+              <Link
                 href={"/history"}
                 className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-100"
                 onClick={closeSidebar}
@@ -496,14 +511,14 @@ export default function Navbar() {
             <span className="text-xs font-medium text-gray-600">Studio</span>
           </Link>
           <Link
-            href="/history"
+            href="/liked"
             className={`flex flex-1 flex-col items-center justify-center py-2 ${
-              activeTab === "history" ? "text-red-600" : "text-gray-600"
+              activeTab === "liked" ? "text-red-600" : "text-gray-600"
             }`}
-            onClick={() => setActiveTab("history")}
+            onClick={() => setActiveTab("liked")}
           >
-            <Clock className="h-5 w-5 mb-0.5" />
-            <span className="text-xs font-medium">history</span>
+            <Heart className="h-5 w-5 mb-0.5" />
+            <span className="text-xs font-medium">Liked</span>
           </Link>
           {session?.user ? (
             <Link
