@@ -31,7 +31,11 @@ export default function Feed() {
 											<h3 className="font-medium line-clamp-2 group-hover:text-blue-600">
 												{video.title}
 											</h3>
-											<p className="text-sm text-gray-600">{video.channel && typeof video.channel === 'object' ? video.channel.name : video.channel}</p>
+											<p className="text-sm text-gray-600">
+												{typeof video.channel === "object"
+													? video.channel?.name
+													: video.channel ?? ""}
+											</p>
 											<p className="text-sm text-gray-600">
 												{video.views} • {video.time}
 											</p>
