@@ -1,8 +1,12 @@
+'use client'
 import Link from "next/link";
 import Image from "next/image";
 import { videos } from "@/data/draft";
+import { useSession } from "next-auth/react";
 
 export default function Feed() {
+	const {data} = useSession();
+	console.log(data)
 	return (
 		<div className="min-h-screen bg-background">
 			<div className="flex">
@@ -21,7 +25,7 @@ export default function Feed() {
 												src={video.thumbnail || "/placeholder.svg"}
 												alt={video.title}
 												fill
-												className="object-cover group-hover:scale-105 transition-transform duration-200"
+												className="object-cover group-hover:scale-102 transition-transform duration-500"
 											/>
 											<div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded">
 												{video.duration}
@@ -31,11 +35,7 @@ export default function Feed() {
 											<h3 className="font-medium line-clamp-2 group-hover:text-blue-600">
 												{video.title}
 											</h3>
-											<p className="text-sm text-gray-600">
-												{typeof video.channel === "object"
-													? video.channel?.name
-													: video.channel ?? ""}
-											</p>
+											<p className="text-sm text-gray-600">{ typeof video.channel === 'object' ? video.channel.name : video.channel}</p>
 											<p className="text-sm text-gray-600">
 												{video.views} • {video.time}
 											</p>

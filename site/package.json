@@ -1,16 +1,16 @@
 {
-	"name": "MedTrack",
+	"name": "signflix",
 	"version": "0.0.3",
 	"private": true,
 	"scripts": {
-		"dev": "next dev",
-		"build": "prisma generate && next build",
-		"start": "next start",
-		"format": "biome format",
-		"db:push": "prisma db push",
-		"db:generate": "prisma generate",
-		"download:models": "node scripts/download-models.js",
-		"setup:ai": "npm run download:models"
+	  "dev": "next dev",
+	  "build": "prisma generate && next build",
+	  "start": "next start -p $PORT",
+	  "format": "biome format",
+	  "db:push": "prisma db push",
+	  "db:generate": "prisma generate",
+	  "download:models": "node scripts/download-models.js",
+	  "setup:ai": "npm run download:models"
 	},
 	"dependencies": {
 		"@mediapipe/tasks-vision": "^0.10.22-rc.20250304",
