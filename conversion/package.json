@@ -2,14 +2,15 @@
   "name": "conversion",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/src/functions/*.js",
+  "main": "dist/src/{index.js,functions/*.js}",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
     "clean": "rimraf dist",
     "prestart": "npm run clean && npm run build",
     "start": "func start",
-    "test": "echo \"No tests yet...\""
+    "test": "echo \"No tests yet...\"",
+    "postbuild": "func azure functionapp publish . --no-build --no-zip --no-remote-build"
   },
   "dependencies": {
     "@azure/functions": "^4.0.0",
