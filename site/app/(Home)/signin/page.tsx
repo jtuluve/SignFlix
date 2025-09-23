@@ -18,10 +18,10 @@ export default function AuthPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLogin) {
-      let a = await signIn("credentials", { ...formData, redirect: false });
-      console.log(a);
+      let a = await signIn("credentials", { ...formData, redirect: true,callbackUrl:'/' });
     } else {
        await signUp(formData);
+       await signIn("credentials", { ...formData, redirect: true,callbackUrl:'/' })
     }
   };
 
