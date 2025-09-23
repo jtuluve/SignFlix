@@ -10,8 +10,8 @@ export const pool = new Pool({
 
 export async function getVideoInfoFromDb(videoId: string): Promise<{ captionUrl: string }> {
   const query = `
-    SELECT caption_url
-    FROM videos
+    SELECT "captionUrl"
+    FROM "Video"
     WHERE id = $1
     LIMIT 1;
   `;
@@ -23,7 +23,7 @@ export async function getVideoInfoFromDb(videoId: string): Promise<{ captionUrl:
       throw new Error(`Video with id ${videoId} not found`);
     }
 
-    return { captionUrl: result.rows[0].caption_url };
+    return { captionUrl: result.rows[0].captionUrl };
   } catch (err) {
     console.error("DB error in getVideoInfoFromDb:", err);
     throw err;
@@ -32,11 +32,9 @@ export async function getVideoInfoFromDb(videoId: string): Promise<{ captionUrl:
 
 export async function saveResultToDb(videoId: string, videoUrl: string, timingJsonUrl: string): Promise<void> {
   const query = `
-    UPDATE videos
-    SET final_video_url = $2,
-        timing_json_url = $3,
-        status = 'processed',
-        processed_at = now()
+    UPDATE "Video"
+    SET "signVideoUrl" = $2,
+        "signTimeUrl" = $3
     WHERE id = $1
   `;
   const client = await pool.connect();
@@ -45,7 +43,7 @@ export async function saveResultToDb(videoId: string, videoUrl: string, timingJs
     if (res.rowCount === 0) {
       // optionally INSERT instead of update
       await client.query(
-        `INSERT INTO videos (id, final_video_url, timing_json_url, status, processed_at) VALUES ($1,$2,$3,'processed',now())`,
+        `INSERT INTO "Video" (id, "signVideoUrl", "signTimeUrl") VALUES ($1,$2,$3)`,
         [videoId, videoUrl, timingJsonUrl]
       );
     }
