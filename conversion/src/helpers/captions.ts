@@ -5,6 +5,7 @@ import * as os from "os";
 import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
 import parseSRT from "parse-srt";
+import fetch from "node-fetch";
 
 export type srt = {
   sequence: number;
@@ -14,7 +15,7 @@ export type srt = {
 };
 
 export async function downloadCaptions(captionUrl: string): Promise<srt[]> {
-  const response = await fetch(captionUrl);
+  const response = await fetchWithRetry(captionUrl);
   const inputSrt = await response.text();
 
   return parseSRT(inputSrt).map((srt)=>{
@@ -54,7 +55,7 @@ export function headersAreSame(a: Pose, b: Pose): boolean {
 }
 
 export async function textToPoseFile(text: string) {
-  const res = await fetch(
+  const res = await fetchWithRetry(
     `${process.env.API_URL}/spoken_text_to_signed_pose?text=${encodeURI(
       text
     )}&spoken=en&signed=ase`
@@ -128,6 +129,25 @@ export async function mergeVideos(
   } catch (e) {}
 }
 
+async function fetchWithRetry(url: string, options: any = {}, retries = 3, delay = 2000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response;
+    } catch (error) {
+      console.log(`Attempt ${i + 1} failed. Retrying in ${delay / 1000} seconds...`);
+      if (i < retries - 1) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        throw error;
+      }
+    }
+  }
+}
+
 async function execCommand(
   cmd: string,
   args: string[],
@@ -140,7 +160,7 @@ async function execCommand(
   while (attempts < maxAttempts) {
     try {
       return await new Promise((resolve, reject) => {
-        const p = spawn(cmd, args, { stdio: "inherit" });
+        const p = spawn(cmd, args, { stdio: "inherit", shell: process.platform === "win32" });
         const to = options.timeout ?? 0;
         let timedOut = false;
         let timer: NodeJS.Timeout | undefined;
