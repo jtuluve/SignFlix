@@ -61,5 +61,5 @@ jobs:
         with:
           app-name: 'Signflix-conversion'
           slot-name: 'Production'
-          package: ./conversion
+          package: .
           
