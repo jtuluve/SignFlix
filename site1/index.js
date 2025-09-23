@@ -1,4 +1,5 @@
 const express = require('express');
+// A simple express server to redirect to the main site
 const app = express();
 const port = process.env.PORT || 3000;
 
