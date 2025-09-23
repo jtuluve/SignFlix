@@ -8,16 +8,17 @@ import { getVideoById, getChannelByName, type Channel } from "@/data/draft"
 import { updateSubscriberCount } from "@/utils/subscription"
 import { getUserByEmail } from "@/utils/user"
 import { getVideobyId } from "@/utils/video"
-import { getServerSession } from "next-auth"
 import { useSession } from "next-auth/react"
+import { use } from "react"
+
 
 type PageProps = {
   params?: Promise<{ id?: string }>
 }
 
-export default async function Page({ params }: PageProps) {
+export default  function Page({ params }: PageProps) {
   const session = useSession();
-  const id = (await params)?.id ?? "1"
+  const id = use(params)?.id ?? "1"
   const video = getVideoById(id)
   async function onSubscribe() {
     if(!session?.data?.user){
@@ -71,10 +72,10 @@ export default async function Page({ params }: PageProps) {
         <div className="grid grid-cols-1 gap-6">
           <WatchView
             videoId={String(id)}
-            videoUrl={videoUrl}
-            captionUrl={captionUrl}
-            posterUrl={posterUrl}
-            signVideoUrl={signVideoUrl}
+            videoUrl={'/video5/Delivering a 1 Minute Speech Try This! - Frantically Speaking (480p, h264, youtube).mp4'}
+            captionUrl={'/video5/s1.srt'}
+            posterUrl={'/video5/s.srt'}
+            signVideoUrl={'/video5/Delivering a 1 Minute Speech Try This! - Frantically Speaking (480p, h264, youtube).mp4'}
             signCaptionUrl={signCaptionUrl}
             initialSpeed={initialWatchSpeed}
           />

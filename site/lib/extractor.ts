@@ -9,7 +9,7 @@ export async function extractSrt(captionUrl: string): Promise<srt[]> {
   const response = await fetch(captionUrl);
   const inputSrt = await response.text();
   const srtString = inputSrt.replaceAll("\r", "").split("\n\n");
-  console.log(srtString);
+  // console.log(srtString);
 
   return srtString
     .map((item) => {
