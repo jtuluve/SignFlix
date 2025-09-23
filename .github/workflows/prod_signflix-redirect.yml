@@ -56,6 +56,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
-          app-name: 'SignFlix-redirect'
+          app-name: 'SignFlix-prod'
           slot-name: 'Production'
           package: ./site1
