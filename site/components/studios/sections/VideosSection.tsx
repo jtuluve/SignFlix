@@ -59,7 +59,9 @@ export default function VideosSection() {
             <CardContent className="p-6">
               <div className="flex gap-6">
                 <div className="relative w-48 aspect-video rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                  <Image src={video.thumbnail || "/placeholder.svg"} alt={video.title} fill className="object-cover" />
+                  <Image 
+                  priority={true}
+                  src={video.thumbnail || "/placeholder.svg"} alt={video.title} fill className="object-cover" />
                   {video.duration && (
                     <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded">
                       {video.duration}

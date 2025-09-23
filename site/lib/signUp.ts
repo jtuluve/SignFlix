@@ -11,6 +11,7 @@ export default async function signUp(user: {name: string, email: string, passwor
         return null;
     }
     const passwordHash = await bcrypt.hash(user.password, 10);
+    console.log(User)
     await createUser({username: user.name, email: user.email, passwordHash: passwordHash});
     
 }

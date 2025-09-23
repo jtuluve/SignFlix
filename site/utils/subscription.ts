@@ -1,6 +1,7 @@
 "use server";
 
 import { db, type Prisma } from "@/utils/prisma";
+import { subscribe } from "diagnostics_channel";
 
 export async function getSubscriptions() {
   return await db.subscription.findMany({
@@ -53,6 +54,30 @@ export async function checkSubscription(
   });
 }
 
+export async function updateSubscriberCount (creatorId:string,userId:string, action: "subscribe" | "unsubscribe") {
+      await db.user.update({
+        where: { id: creatorId },
+        data: { subscribersCount: { increment: action === "subscribe" ? 1 : -1} },
+      })
+      if(subscribe){
+        await db.subscription.create({
+          data: {
+            subscriberId: userId,
+            creatorId: creatorId,
+          },
+        })
+        
+      }else{
+        await db.subscription.deleteMany({
+          where: {
+            subscriberId: userId,
+            creatorId: creatorId
+          }
+        })
+        
+      }
+  }
+
 export async function createSubscription(
   subscription: Prisma.SubscriptionCreateInput
 ) {
@@ -64,6 +89,7 @@ export async function createSubscription(
         creator: true,
       },
     });
+
 
     await tx.user.update({
       where: { id: newSubscription.creatorId },

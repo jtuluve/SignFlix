@@ -153,6 +153,20 @@ export async function incrementVideoLikes(id: string) {
   }
 }
 
+export async function getVideobyId(id: string) {
+  return await db.video.findUnique({
+    where: { id },
+    include: {
+      uploader: true,
+      _count: {
+        select: {
+          likesList: true,
+        },
+      },
+    },
+  });
+}
+
 export async function decrementVideoLikes(id: string) {
   try {
     const video = await db.video.findUnique({ where: { id }, select: { likes: true } });
