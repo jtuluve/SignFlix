@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { Upload, Video, FileText, CheckCircle, X, Subtitles, Plus, Save, Trash2 } from "lucide-react";
 import uploadVideo from "@/lib/uploadVideo";
+import { Toaster, toast } from 'sonner';
 
 export type Caption = {
   id: string;
@@ -58,11 +59,11 @@ export default function UploadSection() {
 
   const handlePublish = async() => {
     if (!uploadedFile) {
-      alert("Please select a video file to upload");
+      toast.warning("Please select a video file to upload");
       return;
     }
     if(!captionFile){
-      alert("please select a caption file to upload");
+      toast.warning("please select a caption file to upload");
       return;
     }
   
@@ -77,7 +78,7 @@ export default function UploadSection() {
       console.log(data+'sdjflksadjfaweorfjojfklasjfoijwoiefds')
       await uploadVideo({data, videoFile: uploadedFile, captionFile, thumbnailFile});
 
-      alert("Video submitted (stub). Wire this to your upload + createVideo() server action.");
+      toast.success("Video submitted successfully");
 
       // reset
       setUploadedFile(null);
@@ -86,7 +87,7 @@ export default function UploadSection() {
       setmetadata({ title: "", description: "", tags: "", category: "" });
     } catch (error) {
       console.error("Failed to publish video:", error);
-      alert("Failed to publish video. Please try again.");
+      toast.error("Failed to publish video. Please try again.");
     } finally {
       setIsPublishing(false);
     }
@@ -94,6 +95,7 @@ export default function UploadSection() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      <Toaster position="top-right" closeButton />
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

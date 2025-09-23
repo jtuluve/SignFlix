@@ -1,16 +1,17 @@
 {
 	"name": "signflix",
-	"version": "0.0.3",
+	"description": "An accessible video streaming platform with integrated sign language interpretation for the deaf and hard-of-hearing community.",
+	"version": "0.0.4",
 	"private": true,
 	"scripts": {
-	  "dev": "next dev",
-	  "build": "prisma generate && next build",
-	  "start": "next start -p ${PORT:-8080}",
-	  "format": "biome format",
-	  "db:push": "prisma db push",
-	  "db:generate": "prisma generate",
-	  "download:models": "node scripts/download-models.js",
-	  "setup:ai": "npm run download:models"
+		"dev": "next dev",
+		"build": "prisma generate && next build",
+		"start": "next start -p ${PORT:-8080}",
+		"format": "biome format",
+		"db:push": "prisma db push",
+		"db:generate": "prisma generate",
+		"download:models": "node scripts/download-models.js",
+		"setup:ai": "npm run download:models"
 	},
 	"dependencies": {
 		"@azure/storage-blob": "^12.28.0",
@@ -37,6 +38,7 @@
 		"next-themes": "^0.4.6",
 		"react": "^19",
 		"react-dom": "^19",
+		"sonner": "^2.0.7",
 		"tailwind-merge": "^3.3.1"
 	},
 	"devDependencies": {

@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Toaster, toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { updateVideo } from "@/utils/video";
 import { useRouter } from "next/navigation";
 
@@ -25,14 +26,17 @@ export default function EditVideoForm({ id }: { id: string }) {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const tagsArr = tags.split(",").map((t) => t.trim()).filter(Boolean);
-      await updateVideo(id,{title, description, category, tags: tagsArr });
+      const tagsArr = tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+      await updateVideo(id, { title, description, category, tags: tagsArr });
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      alert("Video details saved (stub)");
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      toast.success("Video details saved");
     } catch (error) {
       console.error("Failed to save video details:", error);
-      alert("Failed to save video details. Please try again.");
+      toast.error("Failed to save video details. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -44,27 +48,60 @@ export default function EditVideoForm({ id }: { id: string }) {
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
+      <Toaster position="top-right" closeButton />
       <Card>
         <CardHeader>
           <CardTitle>Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium mb-2">Title</label>
-            <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Enter video title" />
+            <label htmlFor="title" className="block text-sm font-medium mb-2">
+              Title
+            </label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter video title"
+            />
           </div>
           <div>
-            <label htmlFor="desc" className="block text-sm font-medium mb-2">Description</label>
-            <Textarea id="desc" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Tell viewers about your video" />
+            <label htmlFor="desc" className="block text-sm font-medium mb-2">
+              Description
+            </label>
+            <Textarea
+              id="desc"
+              rows={4}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Tell viewers about your video"
+            />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="tags" className="block text-sm font-medium mb-2">Tags</label>
-              <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="Comma-separated (e.g. asl, tutorial, beginner)" />
+              <label htmlFor="tags" className="block text-sm font-medium mb-2">
+                Tags
+              </label>
+              <Input
+                id="tags"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="Comma-separated (e.g. asl, tutorial, beginner)"
+              />
             </div>
             <div>
-              <label htmlFor="category" className="block text-sm font-medium mb-2">Category</label>
-              <select id="category" value={category} onChange={(e) => setCategory(e.target.value)} className="w-full p-2 border border-gray-300 rounded-md">
+              <label
+                htmlFor="category"
+                className="block text-sm font-medium mb-2"
+              >
+                Category
+              </label>
+              <select
+                id="category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              >
                 <option value="">Select category</option>
                 <option value="EDUCATION">EDUCATION</option>
                 <option value="ENTERTAINMENT">ENTERTAINMENT</option>
@@ -74,13 +111,15 @@ export default function EditVideoForm({ id }: { id: string }) {
           </div>
         </CardContent>
       </Card>
-
       <div className="w-full flex justify-between">
-        <button className="font-medium text-sm bg-black text-white  px-3 rounded-md cursor-pointer" onClick={handleCancel}>
+        <button
+          className="font-medium text-sm bg-black text-white  px-3 rounded-md cursor-pointer"
+          onClick={handleCancel}
+        >
           Cancel
         </button>
         <Button onClick={handleSave} disabled={isSaving}>
-          {isSaving ? 'Saving...' : 'Save Changes'}
+          {isSaving ? "Saving..." : "Save Changes"}
         </Button>
       </div>
     </div>
