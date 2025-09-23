@@ -1,11 +1,16 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Bell,
   Menu,
@@ -22,60 +27,63 @@ import {
   User,
   Plus,
   ChevronRight,
-} from "lucide-react"
-import VoiceSearchDialog from "@/components/common/voice-search-dialog"
-import SignLanguageDialog from "@/components/common/sign-language-dialog"
+} from "lucide-react";
+import VoiceSearchDialog from "@/components/common/voice-search-dialog";
+import SignLanguageDialog from "@/components/common/sign-language-dialog";
+
+import { signOut, useSession } from "next-auth/react";
 
 export default function Navbar() {
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [isSignedIn] = useState(false)
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState("home")
-  const [isClient, setIsClient] = useState(false)
-  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false)
-  const [isCameraModalOpen, setIsCameraModalOpen] = useState(false)
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("home");
+  const [isClient, setIsClient] = useState(false);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
+  const { data: session } = useSession();
+  console.log("haha", session);
 
-  const [searchQuery, setSearchQuery] = useState("")
-  const desktopInputRef = useRef<HTMLInputElement | null>(null)
-  const mobileInputRef = useRef<HTMLInputElement | null>(null)
+  const [searchQuery, setSearchQuery] = useState("");
+  const desktopInputRef = useRef<HTMLInputElement | null>(null);
+  const mobileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Voice transcript handler
   const handleVoiceTranscriptChange = (text: string, isFinal: boolean) => {
     // Show interim results too for real-time feedback
     setSearchQuery((prev) => {
       if (isFinal) {
-        const sep = prev && !prev.endsWith(" ") ? " " : ""
-        return `${prev}${sep}${text.trim()}`
+        const sep = prev && !prev.endsWith(" ") ? " " : "";
+        return `${prev}${sep}${text.trim()}`;
       } else {
         // For interim results, replace the last word being spoken
-        const words = prev.split(' ')
-        words[words.length - 1] = text.trim()
-        return words.join(' ')
+        const words = prev.split(" ");
+        words[words.length - 1] = text.trim();
+        return words.join(" ");
       }
-    })
+    });
 
-    const el = isMobileSearchOpen ? mobileInputRef.current : desktopInputRef.current
+    const el = isMobileSearchOpen
+      ? mobileInputRef.current
+      : desktopInputRef.current;
     if (el) {
       requestAnimationFrame(() => {
-        el.selectionStart = el.selectionEnd = el.value.length
-      })
+        el.selectionStart = el.selectionEnd = el.value.length;
+      });
     }
-  }
+  };
 
   // Since we're using modals now, we don't need direct hooks here
   // The hooks are used within the modal components
 
-  const handleSidebarToggle = () => setIsSidebarOpen((v) => !v)
-  const closeSidebar = () => setIsSidebarOpen(false)
-  const handleMobileSearchToggle = () => setIsMobileSearchOpen((v) => !v)
+  const handleSidebarToggle = () => setIsSidebarOpen((v) => !v);
+  const closeSidebar = () => setIsSidebarOpen(false);
+  const handleMobileSearchToggle = () => setIsMobileSearchOpen((v) => !v);
 
   // Ensure client-side only rendering for dynamic states
   useEffect(() => {
-    setIsClient(true)
-  }, [])
-
-
+    setIsClient(true);
+  }, []);
 
   return (
     <>
@@ -94,16 +102,22 @@ export default function Navbar() {
 
             <div className="flex-1 flex items-center">
               <div className="relative flex-1">
-                  <Input
-                    ref={mobileInputRef}
-                    className="w-full h-9 px-4 border border-gray-300 rounded-l-full focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 outline-none"
-                    autoFocus
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    aria-label="Search"
-                    placeholder={isClient && isVoiceModalOpen ? 'Voice search active...' : isClient && isCameraModalOpen ? 'Sign language active...' : 'Search'}
-                    suppressHydrationWarning
-                  />
+                <Input
+                  ref={mobileInputRef}
+                  className="w-full h-9 px-4 border border-gray-300 rounded-l-full focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 outline-none"
+                  autoFocus
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  aria-label="Search"
+                  placeholder={
+                    isClient && isVoiceModalOpen
+                      ? "Voice search active..."
+                      : isClient && isCameraModalOpen
+                      ? "Sign language active..."
+                      : "Search"
+                  }
+                  suppressHydrationWarning
+                />
               </div>
               <Button
                 size="icon"
@@ -120,22 +134,30 @@ export default function Navbar() {
                 variant="ghost"
                 size="icon"
                 className={`h-10 w-10 transition-colors rounded-full ${
-                  isClient && isVoiceModalOpen 
-                    ? 'bg-red-100 hover:bg-red-200 text-red-600' 
-                    : 'bg-gray-100 hover:bg-gray-200'
+                  isClient && isVoiceModalOpen
+                    ? "bg-red-100 hover:bg-red-200 text-red-600"
+                    : "bg-gray-100 hover:bg-gray-200"
                 }`}
                 title="Voice Search - Click to start/stop voice input"
                 aria-label="Voice Search - Click to start/stop voice input"
                 onClick={() => {
-                  setIsVoiceModalOpen(true)
+                  setIsVoiceModalOpen(true);
                 }}
               >
-                <Mic className={`h-5 w-5 ${isClient && isVoiceModalOpen ? 'animate-pulse' : ''}`} />
+                <Mic
+                  className={`h-5 w-5 ${
+                    isClient && isVoiceModalOpen ? "animate-pulse" : ""
+                  }`}
+                />
               </Button>
-              <span className={`absolute -top-1 -right-1 text-[10px] font-bold px-1 py-0.5 rounded shadow ${
-                isClient && isVoiceModalOpen ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
-              }`}>
-                {isClient && isVoiceModalOpen ? 'ON' : 'Voice'}
+              <span
+                className={`absolute -top-1 -right-1 text-[10px] font-bold px-1 py-0.5 rounded shadow ${
+                  isClient && isVoiceModalOpen
+                    ? "bg-red-500 text-white"
+                    : "bg-blue-500 text-white"
+                }`}
+              >
+                {isClient && isVoiceModalOpen ? "ON" : "Voice"}
               </span>
             </div>
 
@@ -144,20 +166,26 @@ export default function Navbar() {
                 variant="ghost"
                 size="icon"
                 className={`h-10 w-10 transition-colors rounded-full ${
-                  isClient && isCameraModalOpen 
-                    ? 'bg-green-100 hover:bg-green-200 text-green-600' 
-                    : 'bg-gray-100 hover:bg-gray-200'
+                  isClient && isCameraModalOpen
+                    ? "bg-green-100 hover:bg-green-200 text-green-600"
+                    : "bg-gray-100 hover:bg-gray-200"
                 }`}
                 title="Sign Language Search - Click to start/stop sign language input"
                 aria-label="Sign Language Search - Click to start/stop sign language input"
                 onClick={() => {
-                  setIsCameraModalOpen(true)
+                  setIsCameraModalOpen(true);
                 }}
               >
-                <Video className={`h-5 w-5 ${isClient && isCameraModalOpen ? 'animate-pulse' : ''}`} />
+                <Video
+                  className={`h-5 w-5 ${
+                    isClient && isCameraModalOpen ? "animate-pulse" : ""
+                  }`}
+                />
               </Button>
-              <span className={`absolute -top-1 -right-1 text-[10px] font-bold px-1 py-0.5 rounded shadow bg-green-500 text-white`}>
-                {isClient && isCameraModalOpen ? 'ON' : 'Sign'}
+              <span
+                className={`absolute -top-1 -right-1 text-[10px] font-bold px-1 py-0.5 rounded shadow bg-green-500 text-white`}
+              >
+                {isClient && isCameraModalOpen ? "ON" : "Sign"}
               </span>
             </div>
           </div>
@@ -176,11 +204,16 @@ export default function Navbar() {
                 <Menu className="h-6 w-6" />
               </Button>
 
-              <Link href={"/"} className="flex items-center gap-2 flex-shrink-0">
+              <Link
+                href={"/"}
+                className="flex items-center gap-2 flex-shrink-0"
+              >
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-600 text-white font-bold text-sm">
                   S
                 </div>
-                <span className="text-xl font-medium text-black hidden md:block">SignFlix</span>
+                <span className="text-xl font-medium text-black hidden md:block">
+                  SignFlix
+                </span>
               </Link>
             </div>
 
@@ -193,7 +226,13 @@ export default function Navbar() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     aria-label="Search"
-                    placeholder={isClient && isVoiceModalOpen ? 'Voice search active...' : isClient && isCameraModalOpen ? 'Sign language active...' : 'Search'}
+                    placeholder={
+                      isClient && isVoiceModalOpen
+                        ? "Voice search active..."
+                        : isClient && isCameraModalOpen
+                        ? "Sign language active..."
+                        : "Search"
+                    }
                     suppressHydrationWarning
                   />
                 </div>
@@ -211,22 +250,30 @@ export default function Navbar() {
                     variant="ghost"
                     size="icon"
                     className={`h-10 w-10 transition-colors rounded-full ${
-                      isClient && isVoiceModalOpen 
-                        ? 'bg-red-100 hover:bg-red-200 text-red-600' 
-                        : 'bg-gray-100 hover:bg-gray-200'
+                      isClient && isVoiceModalOpen
+                        ? "bg-red-100 hover:bg-red-200 text-red-600"
+                        : "bg-gray-100 hover:bg-gray-200"
                     }`}
                     title="Voice Search - Click to start/stop voice input"
                     aria-label="Voice Search - Click to start/stop voice input"
                     onClick={() => {
-                      setIsVoiceModalOpen(true)
+                      setIsVoiceModalOpen(true);
                     }}
                   >
-                    <Mic className={`h-5 w-5 ${isClient && isVoiceModalOpen ? 'animate-pulse' : ''}`} />
+                    <Mic
+                      className={`h-5 w-5 ${
+                        isClient && isVoiceModalOpen ? "animate-pulse" : ""
+                      }`}
+                    />
                   </Button>
-                  <span className={`absolute -top-1 -right-1 text-[10px] font-bold px-1 py-0.5 rounded shadow ${
-                    isClient && isVoiceModalOpen ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
-                  }`}>
-                    {isClient && isVoiceModalOpen ? 'ON' : 'Voice'}
+                  <span
+                    className={`absolute -top-1 -right-1 text-[10px] font-bold px-1 py-0.5 rounded shadow ${
+                      isClient && isVoiceModalOpen
+                        ? "bg-red-500 text-white"
+                        : "bg-blue-500 text-white"
+                    }`}
+                  >
+                    {isClient && isVoiceModalOpen ? "ON" : "Voice"}
                   </span>
                 </div>
 
@@ -235,20 +282,26 @@ export default function Navbar() {
                     variant="ghost"
                     size="icon"
                     className={`h-10 w-10 transition-colors rounded-full ${
-                      isClient && isCameraModalOpen 
-                        ? 'bg-green-100 hover:bg-green-200 text-green-600' 
-                        : 'bg-gray-100 hover:bg-gray-200'
+                      isClient && isCameraModalOpen
+                        ? "bg-green-100 hover:bg-green-200 text-green-600"
+                        : "bg-gray-100 hover:bg-gray-200"
                     }`}
                     title="Sign Language Search - Click to start/stop sign language input"
                     aria-label="Sign Language Search - Click to start/stop sign language input"
                     onClick={() => {
-                      setIsCameraModalOpen(true)
+                      setIsCameraModalOpen(true);
                     }}
                   >
-                    <Video className={`h-5 w-5 ${isClient && isCameraModalOpen ? 'animate-pulse' : ''}`} />
+                    <Video
+                      className={`h-5 w-5 ${
+                        isClient && isCameraModalOpen ? "animate-pulse" : ""
+                      }`}
+                    />
                   </Button>
-                  <span className={`absolute -top-1 -right-1 text-[10px] font-bold px-1 py-0.5 rounded shadow bg-green-500 text-white`}>
-                    {isClient && isCameraModalOpen ? 'ON' : 'Sign'}
+                  <span
+                    className={`absolute -top-1 -right-1 text-[10px] font-bold px-1 py-0.5 rounded shadow bg-green-500 text-white`}
+                  >
+                    {isClient && isCameraModalOpen ? "ON" : "Sign"}
                   </span>
                 </div>
               </div>
@@ -289,13 +342,22 @@ export default function Navbar() {
                 <span className="absolute top-1 right-1 h-2 w-2 bg-red-600 rounded-full" />
               </Button>
 
-              {isSignedIn ? (
-                <Avatar className="hidden md:flex h-8 w-8 cursor-pointer">
-                  <AvatarImage src="/placeholder-user.jpg" alt="User" />
-                  <AvatarFallback className="bg-purple-600 text-white text-sm">U</AvatarFallback>
-                </Avatar>
+              {session?.user ? (
+                <Button
+                  onClick={() => {
+                    signOut();
+                  }}
+                  variant="outline"
+                  className="h-9 px-3 border-neutral-300 text-neutral-700 hover:bg-neutral-50 text-sm bg-transparent"
+                >
+                  Sign Out
+                </Button>
               ) : (
-                <Link className="hidden md:block" href="/signin" aria-label="Sign in">
+                <Link
+                  className="hidden md:block"
+                  href="/signin"
+                  aria-label="Sign in"
+                >
                   <Button
                     variant="outline"
                     className="h-9 px-3 border-neutral-300 text-neutral-700 hover:bg-neutral-50 text-sm bg-transparent"
@@ -319,8 +381,11 @@ export default function Navbar() {
       )}
 
       <aside
-        className={`fixed top-14 left-0 h-[calc(100vh-3.5rem)] bg-white transition-transform duration-300 ease-in-out z-40 border-r border-gray-200 hidden md:block ${isSidebarOpen ? "translate-x-0 w-64" : "-translate-x-full md:translate-x-0 md:w-16 xl:w-20"
-          } md:transition-[width] md:duration-200`}
+        className={`fixed top-14 left-0 h-[calc(100vh-3.5rem)] bg-white transition-transform duration-300 ease-in-out z-40 border-r border-gray-200 hidden md:block ${
+          isSidebarOpen
+            ? "translate-x-0 w-64"
+            : "-translate-x-full md:translate-x-0 md:w-16 xl:w-20"
+        } md:transition-[width] md:duration-200`}
         aria-label="Sidebar"
       >
         <nav className="flex flex-col h-full overflow-y-auto">
@@ -332,7 +397,11 @@ export default function Navbar() {
                 onClick={closeSidebar}
               >
                 <Home className="w-6 h-6 flex-shrink-0" />
-                <span className={`${!isSidebarOpen ? "md:hidden xl:hidden" : ""}`}>Home</span>
+                <span
+                  className={`${!isSidebarOpen ? "md:hidden xl:hidden" : ""}`}
+                >
+                  Home
+                </span>
               </Link>
               <Link
                 href={"/subscriptions"}
@@ -340,19 +409,31 @@ export default function Navbar() {
                 onClick={closeSidebar}
               >
                 <FileText className="w-6 h-6 flex-shrink-0" />
-                <span className={`${!isSidebarOpen ? "md:hidden xl:hidden" : ""}`}>Subscriptions</span>
+                <span
+                  className={`${!isSidebarOpen ? "md:hidden xl:hidden" : ""}`}
+                >
+                  Subscriptions
+                </span>
               </Link>
             </div>
 
             <div className="space-y-1 mb-4">
-              <hr className={`mb-3 border-gray-200 ${!isSidebarOpen ? "md:hidden xl:hidden" : ""}`} />
+              <hr
+                className={`mb-3 border-gray-200 ${
+                  !isSidebarOpen ? "md:hidden xl:hidden" : ""
+                }`}
+              />
               <Link
                 href={"/library"}
                 className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-100"
                 onClick={closeSidebar}
               >
                 <Library className="w-6 h-6 flex-shrink-0" />
-                <span className={`${!isSidebarOpen ? "md:hidden xl:hidden" : ""}`}>Library</span>
+                <span
+                  className={`${!isSidebarOpen ? "md:hidden xl:hidden" : ""}`}
+                >
+                  Library
+                </span>
               </Link>
               <Link
                 href={"/history"}
@@ -360,7 +441,11 @@ export default function Navbar() {
                 onClick={closeSidebar}
               >
                 <Clock className="w-6 h-6 flex-shrink-0" />
-                <span className={`${!isSidebarOpen ? "md:hidden xl:hidden" : ""}`}>History</span>
+                <span
+                  className={`${!isSidebarOpen ? "md:hidden xl:hidden" : ""}`}
+                >
+                  History
+                </span>
               </Link>
             </div>
 
@@ -368,7 +453,9 @@ export default function Navbar() {
               <>
                 <hr className="my-3 border-gray-200" />
                 <div className="px-3 py-2">
-                  <h3 className="text-sm font-medium mb-2 text-gray-900">Accessibility Features</h3>
+                  <h3 className="text-sm font-medium mb-2 text-gray-900">
+                    Accessibility Features
+                  </h3>
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center gap-2 hover:text-gray-900">
                       <ChevronRight className="w-4 h-4" />
@@ -393,8 +480,9 @@ export default function Navbar() {
         <div className="flex items-center justify-between">
           <Link
             href="/"
-            className={`flex flex-1 flex-col items-center justify-center py-2 ${activeTab === "home" ? "text-red-600" : "text-gray-600"
-              }`}
+            className={`flex flex-1 flex-col items-center justify-center py-2 ${
+              activeTab === "home" ? "text-red-600" : "text-gray-600"
+            }`}
             onClick={() => setActiveTab("home")}
           >
             <Home className="h-5 w-5 mb-0.5" />
@@ -402,14 +490,18 @@ export default function Navbar() {
           </Link>
           <Link
             href="/subscriptions"
-            className={`flex flex-1 flex-col items-center justify-center py-2 ${activeTab === "subscriptions" ? "text-red-600" : "text-gray-600"
-              }`}
+            className={`flex flex-1 flex-col items-center justify-center py-2 ${
+              activeTab === "subscriptions" ? "text-red-600" : "text-gray-600"
+            }`}
             onClick={() => setActiveTab("subscriptions")}
           >
             <FileText className="h-5 w-5 mb-0.5" />
             <span className="text-xs font-medium leading-tight">Subs</span>
           </Link>
-          <Link href="/create" className="flex flex-1 flex-col items-center justify-center py-2">
+          <Link
+            href="/create"
+            className="flex flex-1 flex-col items-center justify-center py-2"
+          >
             <div className="bg-red-600 rounded-full p-2 mb-0.5">
               <Plus className="h-4 w-4 text-white" />
             </div>
@@ -417,31 +509,36 @@ export default function Navbar() {
           </Link>
           <Link
             href="/library"
-            className={`flex flex-1 flex-col items-center justify-center py-2 ${activeTab === "library" ? "text-red-600" : "text-gray-600"
-              }`}
+            className={`flex flex-1 flex-col items-center justify-center py-2 ${
+              activeTab === "library" ? "text-red-600" : "text-gray-600"
+            }`}
             onClick={() => setActiveTab("library")}
           >
             <Heart className="h-5 w-5 mb-0.5" />
             <span className="text-xs font-medium">Library</span>
           </Link>
-          {isSignedIn ? (
+          {session?.user ? (
             <Link
               href="/profile"
-              className={`flex flex-1 flex-col items-center justify-center py-2 ${activeTab === "profile" ? "text-red-600" : "text-gray-600"
-                }`}
+              className={`flex flex-1 flex-col items-center justify-center py-2 ${
+                activeTab === "profile" ? "text-red-600" : "text-gray-600"
+              }`}
               onClick={() => setActiveTab("profile")}
             >
               <Avatar className="h-5 w-5 mb-0.5">
                 <AvatarImage src="/placeholder-user.jpg" alt="User" />
-                <AvatarFallback className="bg-purple-600 text-white text-[10px]">U</AvatarFallback>
+                <AvatarFallback className="bg-purple-600 text-white text-[10px]">
+                  U
+                </AvatarFallback>
               </Avatar>
               <span className="text-xs font-medium">You</span>
             </Link>
           ) : (
             <Link
               href="/signin"
-              className={`flex flex-1 flex-col items-center justify-center py-2 ${activeTab === "profile" ? "text-red-600" : "text-gray-600"
-                }`}
+              className={`flex flex-1 flex-col items-center justify-center py-2 ${
+                activeTab === "profile" ? "text-red-600" : "text-gray-600"
+              }`}
               onClick={() => setActiveTab("profile")}
             >
               <User className="h-5 w-5 mb-0.5" />
@@ -476,18 +573,19 @@ export default function Navbar() {
         setIsCameraModalOpen={setIsCameraModalOpen}
         onResult={(word) => {
           // Add all recognized letters/words to search query
-          setSearchQuery((prev) => prev + word)
-          const el = isMobileSearchOpen ? mobileInputRef.current : desktopInputRef.current
+          setSearchQuery((prev) => prev + word);
+          const el = isMobileSearchOpen
+            ? mobileInputRef.current
+            : desktopInputRef.current;
           if (el) {
             requestAnimationFrame(() => {
-              el.selectionStart = el.selectionEnd = el.value.length
-            })
+              el.selectionStart = el.selectionEnd = el.value.length;
+            });
           }
         }}
       />
 
-
       <div className="h-14" />
     </>
-  )
+  );
 }
