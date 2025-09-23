@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import updateUserProfile from "@/lib/updateuser";
 import { getUserByEmail } from "@/utils/user";
+import { Toaster, toast } from 'sonner';
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function ProfileSection() {
   const { data: session } = useSession();
@@ -22,7 +23,7 @@ export default function ProfileSection() {
 
   const handleSave = () => {
     updateUserProfile({ username, bio });
-    alert("Profile saved (stub)");
+    toast("Profile saved");
     setIsEditing(false);
   };
 
@@ -36,6 +37,7 @@ export default function ProfileSection() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+      <Toaster position="top-right" closeButton />
       <Card>
         <CardHeader className="flex items-center justify-between">
           <CardTitle>Profile</CardTitle>

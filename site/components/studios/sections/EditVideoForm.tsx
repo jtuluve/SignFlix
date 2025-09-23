@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Toaster, toast } from 'sonner';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 
 // Edit form aligned to Prisma Video model: title, description?, tags[], category?, thumbnailUrl?, captionUrl?
 export default function EditVideoForm({ id }: { id: string }) {
@@ -26,10 +27,10 @@ export default function EditVideoForm({ id }: { id: string }) {
       console.log("Updating video", { id, title, description, category, tags: tagsArr });
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      alert("Video details saved (stub)");
+      toast.success("Video details saved");
     } catch (error) {
       console.error("Failed to save video details:", error);
-      alert("Failed to save video details. Please try again.");
+      toast.error("Failed to save video details. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -37,6 +38,7 @@ export default function EditVideoForm({ id }: { id: string }) {
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
+      <Toaster position="top-right" closeButton />
       <Card>
         <CardHeader>
           <CardTitle>Details</CardTitle>

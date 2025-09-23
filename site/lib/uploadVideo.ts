@@ -35,8 +35,7 @@ export default async function uploadVideo({
   thumbnailFile,
 }: UploadVideoInput) {
   try {
-    console.log(sasToken, account);
-    
+
     const session = await getServerSession();
     //uploading to video blob storage
     const blobServiceClient = new BlobServiceClient(
@@ -44,24 +43,17 @@ export default async function uploadVideo({
     );
     let containerName = "videos";
     let containerClient = blobServiceClient.getContainerClient(containerName);
-    console.log(2);
     await containerClient.createIfNotExists({ access: "container" });
-    console.log(3);
 
     let blobName = `${uuidv4()}-${path.basename(videoFile.name)}`;
-    console.log(4);
     let blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
     let buffer = Buffer.from(await videoFile.arrayBuffer());
-    console.log(5);
     await blockBlobClient.uploadData(buffer, {
       blobHTTPHeaders: { blobContentType: videoFile.type },
     });
-    console.log(6);
     let url = blockBlobClient.url;
-    console.log(url)
     data.videoUrl = url;
-    console.log(7);
 
     //uploading caption to blob storage
     containerName = "captions";
@@ -96,7 +88,7 @@ export default async function uploadVideo({
     data.thumbnailUrl = url;
 
     //pushing to db
-    
+
     const videoCreated = await createVideo({
       ...data,
       uploader: { connect: { email: session?.user.email } },
