@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Mic } from "lucide-react"
+import { Mic, Search } from "lucide-react"
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition"
 
 type VoiceSearchDialogProps = {
@@ -88,21 +88,18 @@ export default function VoiceSearchDialog({ open, onOpenChange, onTranscriptChan
             {friendlyError && <p className="text-sm text-red-600 mb-3">{friendlyError}</p>}
 
             <div className="flex items-center justify-center gap-2">
-              {listening ? (
-                <Button variant="outline" onClick={stop}>
-                  Stop
-                </Button>
-              ) : (
-                <Button
-                  variant="default"
-                  onClick={() => {
-                    reset()
-                    start().catch(() => { })
-                  }}
-                >
-                  Retry
-                </Button>
-              )}
+              <Button
+                variant="default"
+                onClick={() => {
+                  stop();
+                  onTranscriptChange(finalTranscript, true);
+                  onOpenChange(false);
+                }}
+                disabled={!finalTranscript}
+              >
+                <Search className="h-4 w-4 mr-2" />
+                Search
+              </Button>
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Close
               </Button>
