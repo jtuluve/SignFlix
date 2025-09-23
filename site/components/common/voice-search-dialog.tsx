@@ -30,7 +30,7 @@ export default function VoiceSearchDialog({ open, onOpenChange, onTranscriptChan
       reset()
       return
     }
-    start().catch(() => {})
+    start().catch(() => { })
   }, [open, start, stop, reset])
 
   const friendlyError =
@@ -97,7 +97,7 @@ export default function VoiceSearchDialog({ open, onOpenChange, onTranscriptChan
                   variant="default"
                   onClick={() => {
                     reset()
-                    start().catch(() => {})
+                    start().catch(() => { })
                   }}
                 >
                   Retry

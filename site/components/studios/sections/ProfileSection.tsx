@@ -27,13 +27,13 @@ export default function ProfileSection() {
     setIsEditing(false);
   };
 
-  useEffect(()=>{
-    (async()=>{
-        const user = await getUserByEmail(session.user.email);
-        setUsername(user?.username || "");
-        setBio(user?.bio || "No Bio");
+  useEffect(() => {
+    (async () => {
+      const user = await getUserByEmail(session.user.email);
+      setUsername(user?.username || "");
+      setBio(user?.bio || "No Bio");
     })()
-  },[]);
+  }, []);
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -61,9 +61,9 @@ export default function ProfileSection() {
           {/* Avatar */}
           <div className="flex items-center space-x-4">
             <Avatar className="h-16 w-16">
-                <AvatarFallback className="bg-gray-200 text-black text-xl font-semibold">
-                  {username ? username[0].toUpperCase() : "?"}
-                </AvatarFallback>
+              <AvatarFallback className="bg-gray-200 text-black text-xl font-semibold">
+                {username ? username[0].toUpperCase() : "?"}
+              </AvatarFallback>
             </Avatar>
           </div>
 

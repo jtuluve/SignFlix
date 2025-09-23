@@ -15,11 +15,11 @@ export default function AnalyticsSection() {
   const [metrics, setMetrics] = useState<Metrics>();
 
   useEffect(() => {
-    (async()=>{
+    (async () => {
       const data = await getUserAnalytics();
       setMetrics(data);
     })()
-  },[])
+  }, [])
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">

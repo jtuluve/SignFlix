@@ -57,16 +57,16 @@ export default function UploadSection() {
   };
 
 
-  const handlePublish = async() => {
+  const handlePublish = async () => {
     if (!uploadedFile) {
       toast.warning("Please select a video file to upload");
       return;
     }
-    if(!captionFile){
+    if (!captionFile) {
       toast.warning("please select a caption file to upload");
       return;
     }
-  
+
     setIsPublishing(true);
     try {
       const tags = metadata.tags
@@ -74,9 +74,9 @@ export default function UploadSection() {
         .map((t) => t.trim())
         .filter(Boolean);
 
-      const data = {...metadata,tags}
-      console.log(data+'sdjflksadjfaweorfjojfklasjfoijwoiefds')
-      await uploadVideo({data, videoFile: uploadedFile, captionFile, thumbnailFile});
+      const data = { ...metadata, tags }
+      console.log(data + 'sdjflksadjfaweorfjojfklasjfoijwoiefds')
+      await uploadVideo({ data, videoFile: uploadedFile, captionFile, thumbnailFile });
 
       toast.success("Video submitted successfully");
 
@@ -106,9 +106,8 @@ export default function UploadSection() {
           {!uploadedFile ? (
             <fieldset
               aria-label="Drag and drop file upload"
-              className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
-                dragActive ? "border-blue-500 bg-blue-50" : "border-gray-300"
-              }`}
+              className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${dragActive ? "border-blue-500 bg-blue-50" : "border-gray-300"
+                }`}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
@@ -223,15 +222,15 @@ export default function UploadSection() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-                          <div>
-                <label className="block text-sm font-medium mb-2">Caption (.srt)</label>
-                <Input type="file" accept=".srt" onChange={(e) => setCaptionFile(e.target.files?.[0] ?? null)} />
-                {captionFile && (
-                  <Badge variant="secondary" className="mt-2">
-                    {captionFile.name}
-                  </Badge>
-                )}
-              </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Caption (.srt)</label>
+              <Input type="file" accept=".srt" onChange={(e) => setCaptionFile(e.target.files?.[0] ?? null)} />
+              {captionFile && (
+                <Badge variant="secondary" className="mt-2">
+                  {captionFile.name}
+                </Badge>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
