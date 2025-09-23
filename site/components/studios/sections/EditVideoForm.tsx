@@ -7,7 +7,7 @@ import { Toaster, toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getVideo } from "@/utils/video";
+import { getVideobyId } from "@/utils/video";
 import updateVideoContent from "@/lib/updateVideo";
 import Link from "next/link";
 import Image from "next/image";
@@ -30,7 +30,7 @@ export default function EditVideoForm({ id }: { id: string }) {
     (async () => {
       setIsLoading(true);
       try {
-        const fetchedVideo = await getVideo(id);
+        const fetchedVideo = await getVideobyId(id);
         if (fetchedVideo) {
           setVideo(fetchedVideo as UploadedVideo);
           setTitle(fetchedVideo.title);

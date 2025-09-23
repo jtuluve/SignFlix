@@ -33,6 +33,7 @@ model User {
   subscriptions Subscription[] @relation("UserSubscriptions")
   subscribers   Subscription[] @relation("CreatorSubscriptions")
   likes         Like[]
+  views         View[]
   notifications Notification[]
 }
 
@@ -56,6 +57,7 @@ model Video {
   uploader   User   @relation(fields: [uploaderId], references: [id])
 
   likesList Like[]
+  viewList  View[]
 }
 
 model Subscription {
@@ -66,17 +68,32 @@ model Subscription {
 
   subscriber User @relation("UserSubscriptions", fields: [subscriberId], references: [id])
   creator    User @relation("CreatorSubscriptions", fields: [creatorId], references: [id])
+
+  @@unique([subscriberId, creatorId])
 }
 
 model Like {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
 
-  videoId String?
-  video   Video?  @relation(fields: [videoId], references: [id])
+  videoId String
+  video   Video  @relation(fields: [videoId], references: [id])
+}
+
+model View {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+
+    userId String
+    user   User   @relation(fields: [userId], references: [id])
+
+    videoId String
+    video   Video  @relation(fields: [videoId], references: [id])
+
+    @@unique([userId, videoId])
 }
 
 model Notification {

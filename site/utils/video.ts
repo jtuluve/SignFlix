@@ -16,7 +16,7 @@ export async function getVideos() {
   });
 }
 
-export async function getVideo(id: string) {
+export async function getVideobyId(id: string) {
   return await db.video.findUnique({
     where: { id },
     include: {
@@ -30,14 +30,6 @@ export async function getVideo(id: string) {
     },
   });
 }
-
-export async function getVideoById(id: string) {
-  return await db.video.findUnique({
-      where: { id },
-      select: { uploaderId: true },
-    });
-}
-
 
 export async function getVideosByUser(uploaderId: string, take?: number, skip?: number) {
   return await db.video.findMany({
@@ -149,46 +141,4 @@ export async function incrementVideoViews(id: string) {
     where: { id },
     data: { views: { increment: 1 } },
   });
-}
-
-export async function incrementVideoLikes(id: string) {
-  try {
-    return await db.video.update({
-      where: { id },
-      data: { likes: { increment: 1 } },
-    });
-  } catch (error) {
-    console.error('Failed to increment video likes:', error);
-    throw error;
-  }
-}
-
-export async function getVideobyId(id: string) {
-  return await db.video.findUnique({
-    where: { id },
-    include: {
-      uploader: true,
-      _count: {
-        select: {
-          likesList: true,
-        },
-      },
-    },
-  });
-}
-
-export async function decrementVideoLikes(id: string) {
-  try {
-    const video = await db.video.findUnique({ where: { id }, select: { likes: true } });
-    if (!video || video.likes <= 0) {
-      throw new Error('Cannot decrement likes below zero');
-    }
-    return await db.video.update({
-      where: { id },
-      data: { likes: { decrement: 1 } },
-    });
-  } catch (error) {
-    console.error('Failed to decrement video likes:', error);
-    throw error;
-  }
 }

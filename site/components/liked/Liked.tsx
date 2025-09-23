@@ -26,18 +26,37 @@ type Video = {
     uploaderId: string;
 }
 const Library = () => {
-  const {data:session} = useSession();
+  const {data:session, status} = useSession();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'title'>('recent');
   const [likedVideos, setLikedVideos] = useState<{video: Video}[]>([]);
   const [video, setVideo] = useState();
 
   useEffect(() => {
-    ( async () => {
-      const liked = await getLikedVideos(session?.user?.id);
-      setLikedVideos(liked);
-    })();
-  },[]);
+    if (status === 'authenticated') {
+      ( async () => {
+        const liked = await getLikedVideos(session?.user?.id);
+        setLikedVideos(liked);
+      })();
+    }
+  },[status]);
+
+  if (status === 'loading') {
+    return <div>Loading...</div>
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <div className="text-center py-16">
+        <h3 className="text-xl font-semibold mb-3 text-gray-900">
+          Sign in to see your liked videos
+        </h3>
+        <Link href="/signin">
+          <Button>Sign In</Button>
+        </Link>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

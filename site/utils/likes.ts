@@ -24,6 +24,23 @@ export async function getLike(id: string) {
   });
 }
 
+export async function likeVideo(videoId: string) {
+  return await createLike({
+    video: { connect: { id: videoId } },
+  });
+}
+
+export async function unlikeVideo(videoId: string) {
+  const like = await db.like.findFirst({
+    where: {
+      videoId,
+    },
+  });
+  if (like) {
+    return await deleteLike(like.id);
+  }
+}
+
 export async function getUserLikes(userId: string) {
   return await db.like.findMany({
     where: { userId },
@@ -48,15 +65,6 @@ export async function getVideoLikes(videoId: string, page = 1, limit = 50) {
       user: true,
     },
     orderBy: { createdAt: "desc" },
-  });
-}
-
-export async function checkLike(userId: string, videoId: string) {
-  return await db.like.findFirst({
-    where: {
-      userId,
-      videoId,
-    },
   });
 }
 
@@ -96,35 +104,5 @@ export async function deleteLike(id: string) {
     }
 
     return like;
-  });
-}
-
-export async function toggleLike(userId: string, videoId: string) {
-  return await db.$transaction(async (tx) => {
-    const existingLike = await tx.like.findFirst({
-      where: { userId, videoId },
-    });
-
-    if (existingLike) {
-      await tx.like.delete({ where: { id: existingLike.id } });
-      await tx.video.update({
-        where: { id: videoId },
-        data: { likes: { decrement: 1 } },
-      });
-      return { liked: false, like: null };
-    } else {
-      const newLike = await tx.like.create({
-        data: {
-          user: { connect: { id: userId } },
-          video: { connect: { id: videoId } },
-        },
-        include: { user: true, video: true },
-      });
-      await tx.video.update({
-        where: { id: videoId },
-        data: { likes: { increment: 1 } },
-      });
-      return { liked: true, like: newLike };
-    }
   });
 }

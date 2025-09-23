@@ -5,7 +5,7 @@ import * as os from "os";
 import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
 import parseSRT from "parse-srt";
-import fetch from "node-fetch";
+// import fetch from "node-fetch";
 
 export type srt = {
   sequence: number;
