@@ -31,6 +31,14 @@ export async function getVideo(id: string) {
   });
 }
 
+export async function getVideoById(id: string) {
+  return await db.video.findUnique({
+      where: { id },
+      select: { uploaderId: true },
+    });
+}
+
+
 export async function getVideosByUser(uploaderId: string) {
   return await db.video.findMany({
     where: { uploaderId },

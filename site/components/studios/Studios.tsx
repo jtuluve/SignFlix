@@ -116,7 +116,7 @@ const Studio = () => {
                         <TabsTrigger className='cursor-pointer' value="upload">Upload</TabsTrigger>
                         <TabsTrigger className='cursor-pointer' value="videos">My Videos</TabsTrigger>
                         <TabsTrigger className='cursor-pointer' value="analytics">Analytics</TabsTrigger>
-                        <TabsTrigger  className='cursor-pointer'value="profile">Profile</TabsTrigger>
+                        <TabsTrigger className='cursor-pointer' value="profile">Profile</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="upload" className="mt-6">

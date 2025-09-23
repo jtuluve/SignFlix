@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { updateVideo } from "@/utils/video";
+import { useRouter } from "next/navigation";
 
 // Edit form aligned to Prisma Video model: title, description?, tags[], category?, thumbnailUrl?, captionUrl?
 export default function EditVideoForm({ id }: { id: string }) {
@@ -13,6 +15,7 @@ export default function EditVideoForm({ id }: { id: string }) {
   const [tags, setTags] = useState("");
   const [category, setCategory] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     // TODO: load video by id via server action or API and set fields
@@ -23,7 +26,7 @@ export default function EditVideoForm({ id }: { id: string }) {
     setIsSaving(true);
     try {
       const tagsArr = tags.split(",").map((t) => t.trim()).filter(Boolean);
-      console.log("Updating video", { id, title, description, category, tags: tagsArr });
+      await updateVideo(id,{title, description, category, tags: tagsArr });
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       alert("Video details saved (stub)");
@@ -33,6 +36,10 @@ export default function EditVideoForm({ id }: { id: string }) {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleCancel = () => {
+    router.replace("/studios");
   };
 
   return (
@@ -68,7 +75,10 @@ export default function EditVideoForm({ id }: { id: string }) {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
+      <div className="w-full flex justify-between">
+        <button className="font-medium text-sm bg-black text-white  px-3 rounded-md cursor-pointer" onClick={handleCancel}>
+          Cancel
+        </button>
         <Button onClick={handleSave} disabled={isSaving}>
           {isSaving ? 'Saving...' : 'Save Changes'}
         </Button>
