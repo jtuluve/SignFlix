@@ -27,7 +27,7 @@ export default function AuthPage() {
         callbackUrl: "/",
       });
       if(a.ok){
-        window.location.href = "/";
+        window.location.replace("/");
       } else {
         setErrorMessage("Invalid credentials. Please try again.");
       };
@@ -38,6 +38,7 @@ export default function AuthPage() {
         redirect: false,
         callbackUrl: "/",
       });
+      window.location.replace("/");
     }
   };
 
