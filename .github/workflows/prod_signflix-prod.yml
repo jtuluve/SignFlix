@@ -1,4 +1,4 @@
-name: Build and deploy Node.js app to Azure Web App - SignFlix-prod
+name: Build and deploy Next.js app to Azure Web App - SignFlix-prod
 
 on:
   push:
@@ -15,18 +15,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js version
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
 
-      - name: npm install and build
+      # Just to validate the code actually builds
+      - name: Install and build
         working-directory: ./site
         run: |
-          npm install
+          npm ci
           npm run build
 
-      - name: Upload artifact for deployment job
+      # Upload full source, not node_modules
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: node-app
@@ -40,12 +42,12 @@ jobs:
       contents: read
 
     steps:
-      - name: Download artifact from build job
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: node-app
           path: ./site
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
