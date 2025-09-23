@@ -113,10 +113,10 @@ const Studio = () => {
             <div className="p-6">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                     <TabsList className="grid w-full grid-cols-4 max-w-md">
-                        <TabsTrigger value="upload">Upload</TabsTrigger>
-                        <TabsTrigger value="videos">My Videos</TabsTrigger>
-                        <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                        <TabsTrigger value="profile">Profile</TabsTrigger>
+                        <TabsTrigger className='cursor-pointer' value="upload">Upload</TabsTrigger>
+                        <TabsTrigger className='cursor-pointer' value="videos">My Videos</TabsTrigger>
+                        <TabsTrigger className='cursor-pointer' value="analytics">Analytics</TabsTrigger>
+                        <TabsTrigger  className='cursor-pointer'value="profile">Profile</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="upload" className="mt-6">
