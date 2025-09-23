@@ -15,7 +15,6 @@ export default async function updateUserProfile({
   try {
     const session = await getServerSession();
     const user = await getUserByEmail(session.user.email);
-    console.log(user);
     if (!user?.id) {
       throw new Error("Unauthorized");
     }

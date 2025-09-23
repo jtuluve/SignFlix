@@ -82,8 +82,7 @@ const Subscriptions = () => {
                     }`}>
                     <div className="relative cursor-pointer">
                       <Avatar className="w-12 h-12">
-                        <AvatarImage src={channel.avatar || "/placeholder.svg"} alt={channel.name} />
-                        <AvatarFallback>{channel.name.slice(0, 2)}</AvatarFallback>
+                        <AvatarFallback>{channel.name.slice(0, 1)}</AvatarFallback>
                       </Avatar>
                       {channel.isVerified && (
                         <CheckCircle className="absolute -bottom-1 -right-1 w-4 h-4 text-blue-600 bg-white rounded-full" />
@@ -120,8 +119,7 @@ const Subscriptions = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar className="w-10 h-10">
-                    <AvatarImage src={selectedChannel.avatar || "/placeholder.svg"} alt={selectedChannel.name} />
-                    <AvatarFallback>{selectedChannel.name.slice(0, 2)}</AvatarFallback>
+                    <AvatarFallback>{selectedChannel.name.slice(0, 1)}</AvatarFallback>
                   </Avatar>
                   <div>
                     <div className="flex items-center gap-2">
@@ -203,8 +201,7 @@ const Subscriptions = () => {
             <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
               {selectedChannel ? (
                 <Avatar className="w-16 h-16">
-                  <AvatarImage src={selectedChannel.avatar || "/placeholder.svg"} alt={selectedChannel.name} />
-                  <AvatarFallback className="text-lg">{selectedChannel.name.slice(0, 2)}</AvatarFallback>
+                  <AvatarFallback className="text-lg">{selectedChannel.name.slice(0, 1)}</AvatarFallback>
                 </Avatar>
               ) : (
                 <Bell className="w-8 h-8 text-gray-400" />
@@ -266,8 +263,7 @@ const VideoCard = ({
           <div className={`flex gap-3 ${showChannelInfo && channelInfo ? '' : 'justify-start'}`}>
             {showChannelInfo && channelInfo && (
               <Avatar className="w-9 h-9 flex-shrink-0">
-                <AvatarImage src={channelInfo.avatar || "/placeholder.svg"} alt={channelInfo.name} />
-                <AvatarFallback>{channelInfo.name.slice(0, 2)}</AvatarFallback>
+                <AvatarFallback>{channelInfo.name.slice(0, 1)}</AvatarFallback>
               </Avatar>
             )}
             <div className="min-w-0 flex-1">
@@ -332,8 +328,7 @@ const VideoListItem = ({
           {showChannelInfo && channelInfo && (
             <div className="flex items-center gap-2 mb-2">
               <Avatar className="w-5 h-5 md:w-6 md:h-6">
-                <AvatarImage src={channelInfo.avatar || "/placeholder.svg"} alt={channelInfo.name} />
-                <AvatarFallback className="text-xs">{channelInfo.name.slice(0, 2)}</AvatarFallback>
+                <AvatarFallback className="text-xs">{channelInfo.name.slice(0, 1)}</AvatarFallback>
               </Avatar>
               <div className="flex items-center gap-1">
                 <p className="text-xs md:text-sm text-gray-600">{channelInfo.name}</p>

@@ -43,7 +43,7 @@ export default function SignLanguageDialog({ isCameraModalOpen, setIsCameraModal
       try {
         console.log("Dialog opening, waiting for video element...")
         setRetryCount(0) // Reset retry count
-        
+
         // Wait for video element to be available
         let attempts = 0
         const maxAttempts = 20
@@ -51,20 +51,20 @@ export default function SignLanguageDialog({ isCameraModalOpen, setIsCameraModal
           console.log(`Dialog waiting for video element... attempt ${attempts + 1}/${maxAttempts}`);
           await new Promise(resolve => setTimeout(resolve, 500))
           attempts++
-          
+
           // Extra wait time for initial attempts
           if (attempts === 3) {
             console.log('Giving extra time for video element mounting...')
             await new Promise(resolve => setTimeout(resolve, 1500))
           }
         }
-        
+
         if (!videoRef.current) {
           throw new Error("Video element not available in dialog. Please try closing and reopening.")
         }
-        
+
         if (cancelled) return
-        
+
         console.log("Video element found, starting recognition...")
         await startRecognition()
         if (!cancelled) {
@@ -212,17 +212,16 @@ export default function SignLanguageDialog({ isCameraModalOpen, setIsCameraModal
             </div>
             <div>
               <span className="text-gray-500">Status:</span>{" "}
-              <span className={`font-medium ${
-                streaming 
-                  ? aiInitializing 
-                    ? "text-blue-600" 
-                    : "text-green-600" 
+              <span className={`font-medium ${streaming
+                  ? aiInitializing
+                    ? "text-blue-600"
+                    : "text-green-600"
                   : "text-gray-600"
-              }`}>
-                {streaming 
-                  ? aiInitializing 
-                    ? "Initializing" 
-                    : "Active" 
+                }`}>
+                {streaming
+                  ? aiInitializing
+                    ? "Initializing"
+                    : "Active"
                   : "Stopped"}
               </span>
             </div>

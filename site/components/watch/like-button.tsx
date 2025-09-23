@@ -23,7 +23,7 @@ export default function LikeButton({ videoId, baseCount = 0, initialLiked = fals
         setLiked(true)
         setCount((c) => c + (initialLiked ? 0 : 1))
       }
-    } catch {}
+    } catch { }
   }, [storageKey, liked, initialLiked])
 
   async function toggle() {
@@ -38,7 +38,7 @@ export default function LikeButton({ videoId, baseCount = 0, initialLiked = fals
         try {
           if (next) window.localStorage.setItem(storageKey, "1");
           else window.localStorage.removeItem(storageKey);
-        } catch {}
+        } catch { }
         return next;
       });
     } catch (error) {

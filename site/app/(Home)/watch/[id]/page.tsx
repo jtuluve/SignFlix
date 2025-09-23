@@ -1,17 +1,37 @@
+'use client'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import LikeButton from "@/components/watch/like-button"
 import WatchView from "@/components/watch/watch-view"
 import { getVideoById, getChannelByName, type Channel } from "@/data/draft"
+import { updateSubscriberCount } from "@/utils/subscription"
+import { getUserByEmail } from "@/utils/user"
+import { getVideobyId } from "@/utils/video"
+import { getServerSession } from "next-auth"
+import { useSession } from "next-auth/react"
 
 type PageProps = {
   params?: Promise<{ id?: string }>
 }
 
 export default async function Page({ params }: PageProps) {
+  const session = useSession();
   const id = (await params)?.id ?? "1"
   const video = getVideoById(id)
+  async function onSubscribe() {
+    if(!session?.data?.user){
+      window.location.href = "/signin";
+    }
+    const creator = await getVideobyId(id);
+    const user = await getUserByEmail(session.data.user.email);
+    if(!creator){
+      return;
+    }
+    await updateSubscriberCount(creator.id,user.id, "subscribe");
+  
+  }
+
   
   const MEDIA_MAP: Record<
     string,
@@ -82,7 +102,7 @@ export default async function Page({ params }: PageProps) {
                   <div className="text-xs text-muted-foreground">{channel?.subscribers ?? "—"}</div>
                 </div>
               </div>
-              <Button className="shrink-0">Subscribe</Button>
+              <Button className="shrink-0" onClick={onSubscribe}>Subscribe</Button>
             </div>
           </section>
 

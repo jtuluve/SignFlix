@@ -31,7 +31,15 @@ export async function getVideo(id: string) {
   });
 }
 
-export async function getVideosByUser(uploaderId: string) {
+export async function getVideoById(id: string) {
+  return await db.video.findUnique({
+      where: { id },
+      select: { uploaderId: true },
+    });
+}
+
+
+export async function getVideosByUser(uploaderId: string, take?: number, skip?: number) {
   return await db.video.findMany({
     where: { uploaderId },
     include: {
@@ -43,6 +51,8 @@ export async function getVideosByUser(uploaderId: string) {
       },
     },
     orderBy: { createdAt: "desc" },
+    take,
+    skip,
   });
 }
 
@@ -151,6 +161,20 @@ export async function incrementVideoLikes(id: string) {
     console.error('Failed to increment video likes:', error);
     throw error;
   }
+}
+
+export async function getVideobyId(id: string) {
+  return await db.video.findUnique({
+    where: { id },
+    include: {
+      uploader: true,
+      _count: {
+        select: {
+          likesList: true,
+        },
+      },
+    },
+  });
 }
 
 export async function decrementVideoLikes(id: string) {

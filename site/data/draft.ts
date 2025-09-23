@@ -25,7 +25,6 @@ export interface Video {
   resumePosition?: number
   watchCount?: number
   completedAt?: Date
-  addedToHistoryAt?: Date
   deviceWatchedOn?: string
   watchQuality?: string
   watchSpeed?: number
@@ -122,14 +121,6 @@ export const subscribedChannels: Channel[] = [
     isVerified: false,
     isSubscribed: false,
   },
-  {
-    id: "11",
-    name: "HistorySign",
-    avatar: "/placeholder.svg?height=40&width=40&text=HS",
-    subscribers: "1.8M",
-    isVerified: true,
-    isSubscribed: false,
-  },
 ]
 
 export const getChannelByName = (name: string): Channel | undefined => {
@@ -151,7 +142,6 @@ const generateWatchData = (baseDate: Date, isWatched = true) => {
     resumePosition: watchProgress < 100 ? Math.floor(Math.random() * 600) : 0,
     watchCount,
     completedAt: watchProgress === 100 ? watchedAt : undefined,
-    addedToHistoryAt: watchedAt,
     deviceWatchedOn: ["mobile", "desktop", "tablet"][Math.floor(Math.random() * 3)],
     watchQuality: ["720p", "1080p", "480p"][Math.floor(Math.random() * 3)],
     watchSpeed: [1.0, 1.25, 1.5, 2.0][Math.floor(Math.random() * 4)],
@@ -221,17 +211,6 @@ export const videos: Video[] = [
     channel: getChannelByName("Inclusive Fitness"),
     isSaved: false,
     ...generateWatchData(new Date(), false),
-  },
-  {
-    id: "6",
-    title: "History Lesson: World War II Documentary",
-    thumbnail: "/history-documentary.png",
-    duration: "42:15",
-    views: "445K",
-    time: "1 week ago",
-    channel: getChannelByName("HistorySign"),
-    isSaved: false,
-    ...generateWatchData(new Date(), true),
   },
   {
     id: "7",
@@ -470,18 +449,6 @@ export const getWatchedVideos = (): Video[] => {
   return getAllVideos().filter((video) => video.isWatched === true)
 }
 
-export const getWatchHistoryVideos = (): Video[] => {
-  return (
-    getAllVideos()
-      .filter((video) => video.isWatched === true)
-      .sort((a, b) => {
-        const aDate = a.lastWatchedAt || a.watchedAt || new Date(0)
-        const bDate = b.lastWatchedAt || b.watchedAt || new Date(0)
-        return bDate.getTime() - aDate.getTime()
-      })
-  )
-}
-
 export const getIncompleteVideos = (): Video[] => {
   return getAllVideos().filter(
     (video) =>
@@ -552,7 +519,6 @@ export const updateVideoWatchData = (videoId: string | number, watchData: Partia
       ...video,
       ...watchData,
       lastWatchedAt: new Date(),
-      addedToHistoryAt: video.addedToHistoryAt?? new Date(),
     }
   }
   return null

@@ -86,14 +86,14 @@ export function useSpeechRecognition(
       mozSpeechRecognition?: new () => SpeechRecognition;
       msSpeechRecognition?: new () => SpeechRecognition;
     };
-    
+
     // Try multiple browsers and fallbacks
     const SR =
       typeof window !== "undefined" &&
       (
-        speechWindow.SpeechRecognition || 
-        speechWindow.webkitSpeechRecognition || 
-        speechWindow.mozSpeechRecognition || 
+        speechWindow.SpeechRecognition ||
+        speechWindow.webkitSpeechRecognition ||
+        speechWindow.mozSpeechRecognition ||
         speechWindow.msSpeechRecognition
       );
 
@@ -113,7 +113,7 @@ export function useSpeechRecognition(
     recognition.lang = lang;
     recognition.continuous = continuous;
     recognition.interimResults = interimResults;
-    
+
     // Add additional browser-specific configurations
     if ('maxAlternatives' in recognition) {
       (recognition as any).maxAlternatives = 1;
@@ -173,7 +173,7 @@ export function useSpeechRecognition(
           try {
             recognition.start();
             setListening(true);
-          } catch {}
+          } catch { }
         }, 500);
       }
     };
@@ -188,7 +188,7 @@ export function useSpeechRecognition(
           try {
             recognition.start();
             setListening(true);
-          } catch {}
+          } catch { }
         }, 250);
       }
     };
@@ -200,7 +200,7 @@ export function useSpeechRecognition(
       restartTimerRef.current = null;
       try {
         recognition.stop();
-      } catch {}
+      } catch { }
       recognitionRef.current = null;
     };
   }, [lang, continuous, interimResults, onResult]);
@@ -208,13 +208,13 @@ export function useSpeechRecognition(
   const start = useCallback(async () => {
     setError(null);
     setInterimTranscript("");
-    
+
     // Check for HTTPS requirement
     if (typeof window !== 'undefined' && window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
       setError('Speech recognition requires HTTPS or localhost');
       throw new Error('HTTPS required for speech recognition');
     }
-    
+
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (micError) {
@@ -233,25 +233,25 @@ export function useSpeechRecognition(
       if (recognitionRef.current) {
         recognitionRef.current._shouldRestart = true;
       }
-      
+
       // Add timeout for start attempt
       const startPromise = new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error('Speech recognition start timeout'));
         }, 10000); // 10 second timeout
-        
+
         recognition.onstart = () => {
           clearTimeout(timeout);
           setListening(true);
           lastErrorRef.current = null;
           resolve();
         };
-        
+
         recognition.start();
       });
-      
+
       await startPromise;
-      
+
     } catch (err: unknown) {
       console.error('[Speech Recognition] Start error:', err);
       if (
@@ -276,7 +276,7 @@ export function useSpeechRecognition(
     }
     try {
       recognition.stop();
-    } catch {}
+    } catch { }
     setListening(false);
   }, []);
 
