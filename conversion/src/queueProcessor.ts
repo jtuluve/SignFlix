@@ -1,19 +1,19 @@
-import { app, InvocationContext } from "@azure/functions";
-import { getVideoInfoFromDb, saveResultToDb } from "../helpers/db";
+import { QueueServiceClient } from "@azure/storage-queue";
+import { getVideoInfoFromDb, saveResultToDb } from "./helpers/db";
 import path = require("path");
-import { downloadCaptions, headersAreSame, mergePoseJson, mergeVideos, textToPoseFile } from "../helpers/captions";
+import { downloadCaptions, headersAreSame, mergePoseJson, mergeVideos, textToPoseFile } from "./helpers/captions";
 import { poseToVideo, poseJsonToVideo } from "pose-to-video";
 import { Pose } from "pose-format";
-import { timeStringToSeconds } from './../helpers/utils';
-import { uploadToBlob } from "../helpers/blob";
+import { timeStringToSeconds } from './helpers/utils';
+import { uploadToBlob } from "./helpers/blob";
 import * as fs from "fs";
 
-export async function processVideo(
-  videoId: string,
-  context: InvocationContext
-): Promise<void> {
+const CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING;
+const QUEUE_NAME = process.env.VIDEO_QUEUE_NAME || "videos";
+
+async function processSingleVideo(videoId: string): Promise<void> {
   try {
-    context.log(`Processing videoId: ${videoId}`);
+    console.log(`Processing videoId: ${videoId}`);
 
     const videoInfo = await getVideoInfoFromDb(videoId);
     const captions = await downloadCaptions(videoInfo.captionUrl);
@@ -76,15 +76,48 @@ export async function processVideo(
     // Save to DB
     await saveResultToDb(videoId, videoUrl, timingJsonUrl);
 
-    context.log(`Finished processing videoId: ${videoId}`);
+    console.log(`Finished processing videoId: ${videoId}`);
   } catch (err) {
-    context.error("Error processing video:", err);
+    console.error("Error processing video:", err);
     throw err;
   }
 }
 
-app.storageQueue("processVideo", {
-  queueName: "videos",
-  connection: "signflixvideoqueue_STORAGE",
-  handler: processVideo,
-});
+export async function processVideoFromQueue(): Promise<void> {
+  if (!CONNECTION_STRING) {
+    console.error("AZURE_STORAGE_CONNECTION_STRING is not set.");
+    return;
+  }
+
+  const queueServiceClient = QueueServiceClient.fromConnectionString(CONNECTION_STRING);
+  const queueClient = queueServiceClient.getQueueClient(QUEUE_NAME);
+
+  try {
+    // Ensure the queue exists
+    await queueClient.createIfNotExists();
+
+    // Peek messages to see if there are any
+    const peekedMessages = await queueClient.peekMessages({ numberOfMessages: 1 });
+    if (peekedMessages.peekedMessageItems.length === 0) {
+      console.log("No messages in the queue.");
+      return;
+    }
+
+    // Receive messages
+    const response = await queueClient.receiveMessages({ numberOfMessages: 1 }); // Process one message at a time
+
+    for (const message of response.receivedMessageItems) {
+      try {
+        const videoId = message.messageText; // Assuming messageText is the videoId
+        await processSingleVideo(videoId);
+        await queueClient.deleteMessage(message.messageId, message.popReceipt);
+        console.log(`Successfully processed and deleted message for videoId: ${videoId}`);
+      } catch (error) {
+        console.error(`Failed to process message for videoId: ${message.messageText}`, error);
+        // Depending on the error, you might want to re-queue the message or move it to a poison queue
+      }
+    }
+  } catch (error) {
+    console.error("Error interacting with Azure Storage Queue:", error);
+  }
+}
