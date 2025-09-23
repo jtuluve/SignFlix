@@ -1,6 +1,7 @@
 {
 	"name": "signflix",
-	"version": "0.0.3",
+	"description": "An accessible video streaming platform with integrated sign language interpretation for the deaf and hard-of-hearing community.",
+	"version": "0.0.4",
 	"private": true,
 	"scripts": {
 		"dev": "next dev",

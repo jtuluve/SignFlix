@@ -54,29 +54,29 @@ export async function checkSubscription(
   });
 }
 
-export async function updateSubscriberCount (creatorId:string,userId:string, action: "subscribe" | "unsubscribe") {
-      await db.user.update({
-        where: { id: creatorId },
-        data: { subscribersCount: { increment: action === "subscribe" ? 1 : -1} },
-      })
-      if(subscribe){
-        await db.subscription.create({
-          data: {
-            subscriberId: userId,
-            creatorId: creatorId,
-          },
-        })
-        
-      }else{
-        await db.subscription.deleteMany({
-          where: {
-            subscriberId: userId,
-            creatorId: creatorId
-          }
-        })
-        
+export async function updateSubscriberCount(creatorId: string, userId: string, action: "subscribe" | "unsubscribe") {
+  await db.user.update({
+    where: { id: creatorId },
+    data: { subscribersCount: { increment: action === "subscribe" ? 1 : -1 } },
+  })
+  if (subscribe) {
+    await db.subscription.create({
+      data: {
+        subscriberId: userId,
+        creatorId: creatorId,
+      },
+    })
+
+  } else {
+    await db.subscription.deleteMany({
+      where: {
+        subscriberId: userId,
+        creatorId: creatorId
       }
+    })
+
   }
+}
 
 export async function createSubscription(
   subscription: Prisma.SubscriptionCreateInput

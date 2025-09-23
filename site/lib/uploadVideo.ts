@@ -1,6 +1,5 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
 import { BlobServiceClient } from "@azure/storage-blob";
 import { v4 as uuidv4 } from "uuid";
 import { QueueClient } from "@azure/storage-queue";
@@ -10,6 +9,7 @@ import { getServerSession } from "next-auth";
 const account = process.env.AZURE_STORAGE_ACCOUNT;
 const sasToken = process.env.AZURE_BLOB_SAS_TOKEN;
 const queueConnectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+
 type meta = {
   title: string;
   description: string;

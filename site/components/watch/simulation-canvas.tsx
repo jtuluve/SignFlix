@@ -104,16 +104,16 @@ export default function SimulationCanvas({
       x: rightShoulder.x + Math.cos(Math.PI - rightAngle) * armLen,
       y: rightShoulder.y + Math.sin(Math.PI - rightAngle) * armLen + rightLift,
     }
-    
+
     ctx.fillStyle = fg
     ctx.beginPath()
     ctx.arc(cx, cy - torsoH - headR * 0.5, headR, 0, Math.PI * 2)
     ctx.fill()
-    
+
     ctx.fillStyle = fg
     roundRect(ctx, cx - (shoulderW * 0.7) / 2, cy - torsoH / 2, shoulderW * 0.7, torsoH, 8)
     ctx.fill()
-    
+
     ctx.strokeStyle = fg2
     ctx.lineCap = "round"
     ctx.lineWidth = 6
@@ -125,7 +125,7 @@ export default function SimulationCanvas({
     ctx.moveTo(rightShoulder.x, rightShoulder.y)
     ctx.lineTo(rightHand.x, rightHand.y)
     ctx.stroke()
-    
+
     ctx.fillStyle = fg2
     ctx.beginPath()
     ctx.arc(leftHand.x, leftHand.y, handR, 0, Math.PI * 2)
@@ -133,7 +133,7 @@ export default function SimulationCanvas({
     ctx.beginPath()
     ctx.arc(rightHand.x, rightHand.y, handR, 0, Math.PI * 2)
     ctx.fill()
-    
+
     const baseY = h - 28
     ctx.strokeStyle = highContrast ? "#ffffff" : "rgba(255,255,255,0.6)"
     ctx.lineWidth = 2
