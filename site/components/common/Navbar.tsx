@@ -32,6 +32,7 @@ import VoiceSearchDialog from "@/components/common/voice-search-dialog";
 import SignLanguageDialog from "@/components/common/sign-language-dialog";
 
 import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -42,7 +43,7 @@ export default function Navbar() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
   const { data: session } = useSession();
-
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const desktopInputRef = useRef<HTMLInputElement | null>(null);
   const mobileInputRef = useRef<HTMLInputElement | null>(null);
@@ -79,6 +80,13 @@ export default function Navbar() {
   const closeSidebar = () => setIsSidebarOpen(false);
   const handleMobileSearchToggle = () => setIsMobileSearchOpen((v) => !v);
 
+  const submitSearch = () => {
+    const q = searchQuery.trim();
+    if (!q) return;
+    router.push(`/searchvideos?q=${encodeURIComponent(q)}`);
+    setIsMobileSearchOpen(false);
+  };
+
   // Ensure client-side only rendering for dynamic states
   useEffect(() => {
     setIsClient(true);
@@ -107,6 +115,12 @@ export default function Navbar() {
                   autoFocus
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      submitSearch();
+                    }
+                  }}
                   aria-label="Search"
                   placeholder={
                     isClient && isVoiceModalOpen
@@ -123,6 +137,7 @@ export default function Navbar() {
                 className="h-9 w-12 bg-gray-50 hover:bg-gray-100 border border-l-0 border-gray-300 rounded-r-full text-gray-600"
                 variant="ghost"
                 aria-label="Search"
+                onClick={submitSearch}
               >
                 <Search className="h-4 w-4" />
               </Button>
@@ -224,6 +239,12 @@ export default function Navbar() {
                     className="w-full h-10 px-4 border border-gray-300 rounded-l-full focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 outline-none"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        submitSearch();
+                      }
+                    }}
                     aria-label="Search"
                     placeholder={
                       isClient && isVoiceModalOpen
@@ -238,13 +259,15 @@ export default function Navbar() {
                 <Button
                   size="icon"
                   className="h-10 w-16 bg-gray-50 hover:bg-gray-100 border border-l-0 border-gray-300 rounded-r-full text-gray-600"
-                  variant="ghost"
-                  aria-label="Search"
-                >
-                  <Search className="h-5 w-5" />
-                </Button>
-
-                <div className="relative inline-block ml-2">
+                variant="ghost"
+                aria-label="Search"
+                onClick={submitSearch}
+              >
+                <Search className="h-5 w-5" />
+              </Button>
+                
+                {/* voice */}
+                {/* <div className="relative inline-block ml-2">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -274,7 +297,7 @@ export default function Navbar() {
                   >
                     {isClient && isVoiceModalOpen ? "ON" : "Voice"}
                   </span>
-                </div>
+                </div> */}
 
                 <div className="relative inline-block ml-2">
                   <Button
