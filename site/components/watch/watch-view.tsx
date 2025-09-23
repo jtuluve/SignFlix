@@ -228,7 +228,7 @@ export default function WatchView({
         <div className="order-1 lg:order-1 aspect-video rounded-lg overflow-hidden relative border bg-background">
           {createElement("pose-viewer", {
             className: "w-full h-full",
-            src: "/test/ACCEPT.pose",
+            src: "/test/shape.pose",
             "aria-label": "Sign language pose viewer",
             loop: "true",
             renderer: "svg",

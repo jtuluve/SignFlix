@@ -1,7 +1,10 @@
 "use client"
 
 import type React from 'react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,7 +12,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Upload, Video, FileText, Eye, Edit, Trash2, Plus, Save, X, BarChart3, Users, Clock, CheckCircle, Camera, Subtitles, Heart, MessageCircle, Calendar } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Upload, Video, FileText, Eye, Edit, Trash2, Plus, Save, X, BarChart3, Users, Clock, CheckCircle, Camera, Subtitles, Heart, MessageCircle, Calendar, User, Mail, Bell, Shield, Palette, Globe, Settings } from 'lucide-react';
 import Image from 'next/image';
 
 interface Caption {
@@ -32,13 +37,34 @@ interface UploadedVideo {
     comments: string;
     captions: Caption[];
 }
+
 const Studio = () => {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [user, setUser] = useState({ name: '', email: '' });
+    const { data: session, status } = useSession();
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState('upload');
 
-    if (!isLoggedIn) {
-        return <LoginForm onLogin={setIsLoggedIn} setUser={setUser} />;
+    useEffect(() => {
+        if (status === 'loading') return; // Still loading
+        if (!session) {
+            router.push('/'); // Redirect to home if not authenticated
+        }
+    }, [session, status, router]);
+
+    if (status === 'loading') {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <Camera className="w-5 h-5 text-white" />
+                    </div>
+                    <p className="text-gray-600">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!session) {
+        return null; // This will not render while redirecting
     }
 
     return (
@@ -50,18 +76,29 @@ const Studio = () => {
                             <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
                                 <Camera className="w-5 h-5 text-white" />
                             </div>
-                            <h1 className="text-xl font-bold">MedTrack Studio</h1>
+                            <h1 className="text-xl font-bold">SignFlix Studio</h1>
                         </div>
                         <Badge variant="secondary">Creator Dashboard</Badge>
                     </div>
                     <div className="flex items-center gap-4">
-                        <div className="text-sm text-gray-600">
-                            Welcome back, <span className="font-medium">{user.name}</span>
+                        <div className="flex items-center gap-3">
+                            {session.user?.image && (
+                                <Image
+                                    src={session.user.image}
+                                    alt="Profile"
+                                    width={32}
+                                    height={32}
+                                    className="rounded-full"
+                                />
+                            )}
+                            <div className="text-sm text-gray-600">
+                                Welcome back, <span className="font-medium">{session.user?.name || 'Creator'}</span>
+                            </div>
                         </div>
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setIsLoggedIn(false)}
+                            onClick={() => signOut({ callbackUrl: '/' })}
                         >
                             Sign Out
                         </Button>
@@ -71,10 +108,11 @@ const Studio = () => {
 
             <div className="p-6">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 max-w-md">
+                    <TabsList className="grid w-full grid-cols-4 max-w-md">
                         <TabsTrigger value="upload">Upload</TabsTrigger>
                         <TabsTrigger value="videos">My Videos</TabsTrigger>
                         <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                        <TabsTrigger value="profile">Profile</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="upload" className="mt-6">
@@ -88,85 +126,315 @@ const Studio = () => {
                     <TabsContent value="analytics" className="mt-6">
                         <AnalyticsSection />
                     </TabsContent>
+
+                    <TabsContent value="profile" className="mt-6">
+                        <ProfileSection session={session} />
+                    </TabsContent>
                 </Tabs>
             </div>
         </div>
     );
 };
 
-const LoginForm = ({ onLogin, setUser }: { onLogin: (status: boolean) => void; setUser: (user: { name: string, email: string }) => void }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [name, setName] = useState('');
-    const [isSignUp, setIsSignUp] = useState(false);
+const ProfileSection = ({ session }: { session: any }) => {
+    const [profileData, setProfileData] = useState({
+        displayName: session.user?.name || '',
+        email: session.user?.email || '',
+        bio: '',
+        website: '',
+        location: '',
+        profileImage: session.user?.image || '',
+    });
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setUser({ name: name || 'Creator', email });
-        onLogin(true);
+    const [preferences, setPreferences] = useState({
+        emailNotifications: true,
+        pushNotifications: false,
+        publicProfile: true,
+        showEmail: false,
+        autoplayVideos: true,
+        darkMode: false,
+    });
+
+    const [stats] = useState({
+        joinDate: '2024-01-01',
+        totalVideos: 24,
+        totalViews: '234K',
+        subscribers: '12.5K',
+        totalLikes: '45.2K',
+    });
+
+    const handleProfileUpdate = () => {
+        // Handle profile update logic here
+        console.log('Updating profile:', profileData);
+        alert('Profile updated successfully!');
+    };
+
+    const handlePreferencesUpdate = () => {
+        // Handle preferences update logic here
+        console.log('Updating preferences:', preferences);
+        alert('Preferences updated successfully!');
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center p-4">
-            <Card className="w-full max-w-md">
-                <CardHeader className="text-center">
-                    <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Camera className="w-8 h-8 text-white" />
-                    </div>
-                    <CardTitle className="text-2xl">MedTrack Studio</CardTitle>
-                    <p className="text-gray-600">
-                        {isSignUp ? 'Create your creator account' : 'Sign in to your creator account'}
-                    </p>
+        <div className="max-w-4xl mx-auto space-y-6">
+            {/* Profile Overview */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <User className="w-5 h-5" />
+                        Profile Overview
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        {isSignUp && (
-                            <div>
-                                <label htmlFor='name' className="block text-sm font-medium mb-2">Full Name</label>
-                                <Input
-                                    id="name"
-                                    type="text"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    placeholder="Enter your full name"
-                                    required
-                                />
+                    <div className="flex items-start gap-6">
+                        <div className="relative">
+                            <div className="w-24 h-24 bg-gray-200 rounded-full overflow-hidden">
+                                {profileData.profileImage ? (
+                                    <Image
+                                        src={profileData.profileImage}
+                                        alt="Profile"
+                                        width={96}
+                                        height={96}
+                                        className="object-cover w-full h-full"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-gray-300">
+                                        <User className="w-8 h-8 text-gray-600" />
+                                    </div>
+                                )}
                             </div>
-                        )}
+                            <Button size="sm" className="absolute -bottom-2 -right-2 rounded-full p-2">
+                                <Camera className="w-3 h-3" />
+                            </Button>
+                        </div>
+                        <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <p className="text-2xl font-bold text-blue-600">{stats.totalVideos}</p>
+                                <p className="text-sm text-gray-600">Videos</p>
+                            </div>
+                            <div>
+                                <p className="text-2xl font-bold text-green-600">{stats.totalViews}</p>
+                                <p className="text-sm text-gray-600">Total Views</p>
+                            </div>
+                            <div>
+                                <p className="text-2xl font-bold text-purple-600">{stats.subscribers}</p>
+                                <p className="text-sm text-gray-600">Subscribers</p>
+                            </div>
+                            <div>
+                                <p className="text-2xl font-bold text-red-600">{stats.totalLikes}</p>
+                                <p className="text-sm text-gray-600">Total Likes</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                        <p className="text-sm text-gray-600">
+                            <Calendar className="w-4 h-4 inline mr-2" />
+                            Member since {new Date(stats.joinDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Edit Profile */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Edit className="w-5 h-5" />
+                        Edit Profile
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label htmlFor='email' className="block text-sm font-medium mb-2">Email</label>
+                            <Label htmlFor="displayName">Display Name</Label>
+                            <Input
+                                id="displayName"
+                                value={profileData.displayName}
+                                onChange={(e) => setProfileData({ ...profileData, displayName: e.target.value })}
+                                placeholder="Your display name"
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="email">Email</Label>
                             <Input
                                 id="email"
                                 type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Enter your email"
-                                required
+                                value={profileData.email}
+                                onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                                placeholder="your@email.com"
+                            />
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <Label htmlFor="bio">Bio</Label>
+                        <Textarea
+                            id="bio"
+                            value={profileData.bio}
+                            onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                            placeholder="Tell viewers about yourself and your channel"
+                            rows={3}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <Label htmlFor="website">Website</Label>
+                            <Input
+                                id="website"
+                                value={profileData.website}
+                                onChange={(e) => setProfileData({ ...profileData, website: e.target.value })}
+                                placeholder="https://your-website.com"
                             />
                         </div>
                         <div>
-                            <label htmlFor='password' className="block text-sm font-medium mb-2">Password</label>
+                            <Label htmlFor="location">Location</Label>
                             <Input
-                                id="password"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Enter your password"
-                                required
+                                id="location"
+                                value={profileData.location}
+                                onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
+                                placeholder="Your location"
                             />
                         </div>
-                        <Button type="submit" className="w-full">
-                            {isSignUp ? 'Create Account' : 'Sign In'}
+                    </div>
+
+                    <Button onClick={handleProfileUpdate} className="w-full md:w-auto">
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Profile Changes
+                    </Button>
+                </CardContent>
+            </Card>
+
+            {/* Privacy & Preferences */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Settings className="w-5 h-5" />
+                        Privacy & Preferences
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div>
+                        <h4 className="font-medium mb-4 flex items-center gap-2">
+                            <Bell className="w-4 h-4" />
+                            Notification Settings
+                        </h4>
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="emailNotifications">Email notifications</Label>
+                                <Switch
+                                    id="emailNotifications"
+                                    checked={preferences.emailNotifications}
+                                    onCheckedChange={(checked) => setPreferences({ ...preferences, emailNotifications: checked })}
+                                />
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="pushNotifications">Push notifications</Label>
+                                <Switch
+                                    id="pushNotifications"
+                                    checked={preferences.pushNotifications}
+                                    onCheckedChange={(checked) => setPreferences({ ...preferences, pushNotifications: checked })}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 className="font-medium mb-4 flex items-center gap-2">
+                            <Shield className="w-4 h-4" />
+                            Privacy Settings
+                        </h4>
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="publicProfile">Public profile</Label>
+                                <Switch
+                                    id="publicProfile"
+                                    checked={preferences.publicProfile}
+                                    onCheckedChange={(checked) => setPreferences({ ...preferences, publicProfile: checked })}
+                                />
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="showEmail">Show email publicly</Label>
+                                <Switch
+                                    id="showEmail"
+                                    checked={preferences.showEmail}
+                                    onCheckedChange={(checked) => setPreferences({ ...preferences, showEmail: checked })}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 className="font-medium mb-4 flex items-center gap-2">
+                            <Palette className="w-4 h-4" />
+                            Display Settings
+                        </h4>
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="autoplayVideos">Autoplay videos</Label>
+                                <Switch
+                                    id="autoplayVideos"
+                                    checked={preferences.autoplayVideos}
+                                    onCheckedChange={(checked) => setPreferences({ ...preferences, autoplayVideos: checked })}
+                                />
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="darkMode">Dark mode</Label>
+                                <Switch
+                                    id="darkMode"
+                                    checked={preferences.darkMode}
+                                    onCheckedChange={(checked) => setPreferences({ ...preferences, darkMode: checked })}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <Button onClick={handlePreferencesUpdate} variant="outline" className="w-full md:w-auto">
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Preferences
+                    </Button>
+                </CardContent>
+            </Card>
+
+            {/* Account Security */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Shield className="w-5 h-5" />
+                        Account Security
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Button variant="outline" className="justify-start">
+                            <Mail className="w-4 h-4 mr-2" />
+                            Change Email
                         </Button>
-                    </form>
-                    <div className="mt-4 text-center">
-                        <button
-                            type="button"
-                            onClick={() => setIsSignUp(!isSignUp)}
-                            className="text-sm text-blue-600 hover:underline"
-                        >
-                            {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
-                        </button>
+                        <Button variant="outline" className="justify-start">
+                            <Shield className="w-4 h-4 mr-2" />
+                            Change Password
+                        </Button>
+                    </div>
+                    
+                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <h4 className="font-medium text-yellow-800 mb-2">Two-Factor Authentication</h4>
+                        <p className="text-sm text-yellow-700 mb-3">
+                            Add an extra layer of security to your account by enabling two-factor authentication.
+                        </p>
+                        <Button size="sm" variant="outline" className="border-yellow-300 text-yellow-800 hover:bg-yellow-100">
+                            Enable 2FA
+                        </Button>
+                    </div>
+
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <h4 className="font-medium text-red-800 mb-2">Danger Zone</h4>
+                        <p className="text-sm text-red-700 mb-3">
+                            Once you delete your account, there is no going back. Please be certain.
+                        </p>
+                        <Button size="sm" variant="destructive">
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete Account
+                        </Button>
                     </div>
                 </CardContent>
             </Card>
@@ -174,7 +442,7 @@ const LoginForm = ({ onLogin, setUser }: { onLogin: (status: boolean) => void; s
     );
 };
 
-const UploadSection = () => {
+export const UploadSection = () => {
     const [dragActive, setDragActive] = useState(false);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
     const [videoDetails, setVideoDetails] = useState({
@@ -552,7 +820,7 @@ const CaptionEditor = ({
     );
 };
 
-const VideosSection = () => {
+export const VideosSection = () => {
     const [videos] = useState<UploadedVideo[]>([
         {
             id: '1',
@@ -671,10 +939,12 @@ const VideosSection = () => {
                                     </div>
 
                                     <div className="flex items-center gap-2">
-                                        <Button variant="outline" size="sm">
-                                            <Edit className="w-4 h-4 mr-2" />
-                                            Edit
-                                        </Button>
+                                        <Link href={`/studios/content/${video.id}`}>
+                                            <Button variant="outline" size="sm">
+                                                <Edit className="w-4 h-4 mr-2" />
+                                                Edit
+                                            </Button>
+                                        </Link>
                                         <Button variant="outline" size="sm">
                                             <BarChart3 className="w-4 h-4 mr-2" />
                                             Analytics
@@ -697,7 +967,7 @@ const VideosSection = () => {
     );
 };
 
-const AnalyticsSection = () => {
+export const AnalyticsSection = () => {
     return (
         <div className="max-w-6xl mx-auto space-y-6">
             <h2 className="text-2xl font-bold">Channel Analytics</h2>
