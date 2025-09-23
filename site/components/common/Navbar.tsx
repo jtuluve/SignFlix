@@ -318,17 +318,19 @@ export default function Navbar() {
                 <Search className="h-5 w-5" />
               </Button>
 
+            { session?.user &&
               <Link href="/studios" target="_blank" className="hidden md:block">
                 <Button
                   variant="default"
                   size="sm"
                   className="flex items-center gap-2 px-4 py-2 h-10 rounded-full text-white shadow-md hover:shadow-lg transition-all duration-200"
-                  title="Create content"
+                  title="Open Studio"
                 >
                   <Upload className="h-4 w-4" />
-                  <span className="font-medium text-sm">Create</span>
+                  <span className="font-medium text-sm">Studio</span>
                 </Button>
               </Link>
+            }
 
               <Button
                 variant="ghost"
@@ -499,13 +501,13 @@ export default function Navbar() {
             <span className="text-xs font-medium leading-tight">Subs</span>
           </Link>
           <Link
-            href="/create"
+            href="/studios"
             className="flex flex-1 flex-col items-center justify-center py-2"
           >
             <div className="bg-red-600 rounded-full p-2 mb-0.5">
               <Plus className="h-4 w-4 text-white" />
             </div>
-            <span className="text-xs font-medium text-gray-600">Create</span>
+            <span className="text-xs font-medium text-gray-600">Studio</span>
           </Link>
           <Link
             href="/library"
