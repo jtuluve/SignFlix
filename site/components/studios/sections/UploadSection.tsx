@@ -58,18 +58,21 @@ export default function UploadSection() {
   const handlePublish = async() => {
     if (!uploadedFile) {
       alert("Please select a video file to upload");
-    if(!captionFile){
-      alert("please select a caption file to upload")
-    }
-    const tags = metadata.tags
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean);
-
-    const data = {...metadata,tags}
-    await uploadVideo({data, videoFile: uploadedFile, captionFile, thumbnailFile});
       return;
     }
+    if(!captionFile){
+      alert("please select a caption file to upload");
+      return;
+    }
+  
+  const tags = metadata.tags
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+
+  const data = {...metadata,tags}
+  console.log(data+'sdjflksadjfaweorfjojfklasjfoijwoiefds')
+  await uploadVideo({data, videoFile: uploadedFile, captionFile, thumbnailFile});
 
     // Convert comma-separated tags to array
 
