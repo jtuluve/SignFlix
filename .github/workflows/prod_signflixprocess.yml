@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Node.js project to Azure Function App - processvideosignflix
+name: Build and deploy Node.js project to Azure Function App - signflixprocess
 
 on:
   push:
@@ -59,15 +59,15 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_C6A7A420E65F4327A7A90749AE68F4B4 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_FAE65F56866042E7BE627B8B39916AC0 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_52E2C78FBA864BEF8BA63E05C928F09D }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_B074D92C8CC5481A9A0A9C516BC9B3F9 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C2F4A7B32A854E7286DB5A88A2E363B4 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_59324D6C19E749C799D3A7DA13118395 }}
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         id: fa
         with:
-          app-name: 'processvideosignflix'
+          app-name: 'signflixprocess'
           slot-name: 'Production'
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
 
