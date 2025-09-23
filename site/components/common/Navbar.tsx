@@ -267,7 +267,7 @@ export default function Navbar() {
               </Button>
                 
                 {/* voice */}
-                {/* <div className="relative inline-block ml-2">
+                <div className="relative inline-block ml-2">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -297,7 +297,7 @@ export default function Navbar() {
                   >
                     {isClient && isVoiceModalOpen ? "ON" : "Voice"}
                   </span>
-                </div> */}
+                </div>
 
                 <div className="relative inline-block ml-2">
                   <Button
@@ -472,27 +472,6 @@ export default function Navbar() {
                 </span>
               </Link>
             </div>
-
-            {isSidebarOpen && (
-              <>
-                <hr className="my-3 border-gray-200" />
-                <div className="px-3 py-2">
-                  <h3 className="text-sm font-medium mb-2 text-gray-900">
-                    Accessibility Features
-                  </h3>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex items-center gap-2 hover:text-gray-900">
-                      <ChevronRight className="w-4 h-4" />
-                      Sign Language Support
-                    </div>
-                    <div className="flex items-center gap-2 hover:text-gray-900">
-                      <ChevronRight className="w-4 h-4" />
-                      Synchronized Captions
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
           </div>
         </nav>
       </aside>

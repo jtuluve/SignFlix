@@ -32,7 +32,7 @@ const Library = () => {
       <main className="pt-4 px-4 pb-20 md:pb-4">
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
               <Clock className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -187,7 +187,7 @@ const VideoCard = ({ video }: { video: Video }) => {
             </div>
           </div>
           <div className="absolute top-2 left-2">
-            <div className="bg-blue-600 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+            <div className="bg-black text-white text-xs px-2 py-1 rounded flex items-center gap-1">
               <Clock className="w-3 h-3" />
               Saved
             </div>
