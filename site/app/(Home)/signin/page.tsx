@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react"
+import { signIn } from "next-auth/react";
 import signUp from "@/lib/signUp";
 import { X } from "lucide-react";
 export default function AuthPage() {
@@ -11,6 +11,8 @@ export default function AuthPage() {
     email: "",
     password: "",
   });
+  const [errorMessage, setErrorMessage] = useState("");
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -19,10 +21,23 @@ export default function AuthPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLogin) {
-      let a = await signIn("credentials", { ...formData, redirect: true,callbackUrl:'/' });
+      let a = await signIn("credentials", {
+        ...formData,
+        redirect: false,
+        callbackUrl: "/",
+      });
+      if(a.ok){
+        window.location.href = "/";
+      } else {
+        setErrorMessage("Invalid credentials. Please try again.");
+      };
     } else {
-       await signUp(formData);
-       await signIn("credentials", { ...formData, redirect: true,callbackUrl:'/' })
+      await signUp(formData);
+      await signIn("credentials", {
+        ...formData,
+        redirect: false,
+        callbackUrl: "/",
+      });
     }
   };
 
@@ -30,7 +45,7 @@ export default function AuthPage() {
     <div className="flex min-h-screen items-center justify-center bg-white">
       <div className="w-full relative max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-lg">
         <a
-          href='\'
+          href="\"
           className="absolute right-4 top-4 text-black hover:bg-gray-100 p-1 rounded-b-sm"
         >
           <X size={20} />
@@ -42,7 +57,9 @@ export default function AuthPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <div>
-              <label className="block text-sm font-medium text-black">Name</label>
+              <label className="block text-sm font-medium text-black">
+                Name
+              </label>
               <input
                 type="text"
                 name="name"
@@ -55,7 +72,9 @@ export default function AuthPage() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-black">Email</label>
+            <label className="block text-sm font-medium text-black">
+              Email
+            </label>
             <input
               type="email"
               name="email"
@@ -67,7 +86,9 @@ export default function AuthPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black">Password</label>
+            <label className="block text-sm font-medium text-black">
+              Password
+            </label>
             <input
               type="password"
               name="password"
@@ -77,6 +98,10 @@ export default function AuthPage() {
               className="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-black placeholder-gray-400 focus:border-black focus:outline-none"
             />
           </div>
+
+          {errorMessage && (
+            <p className="text-sm text-red-500 text-center">{errorMessage}</p>
+          )}
 
           <button
             type="submit"
