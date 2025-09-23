@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import express from "express";
 import { processVideoFromQueue } from "./queueProcessor"; // We will create this file next
 
@@ -17,7 +19,7 @@ app.post("/process-video-queue", async (req, res) => {
     req.on("close", async () => {
       await processVideoFromQueue();
     });
-    
+
     res.status(200).send("Video queue processing initiated.");
 
     // In a real application, you might want to add authentication/authorization here
