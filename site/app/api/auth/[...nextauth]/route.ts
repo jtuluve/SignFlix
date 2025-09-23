@@ -28,17 +28,38 @@ providers: [
   })
 ],
 callbacks: {
-  async jwt({ token, account }) {
-    if (account) {
-      token.accessToken = account.access_token
-    }
-    return token
+    async jwt({ token, account, user }) {
+      // First sign-in
+      if (account) {
+        return {
+          ...token,
+          accessToken: account.access_token,
+          accessTokenExpires: Date.now() + 60*60,
+          user, // keep user info in token
+        };
+      }
+
+      // If token is still valid, return it
+      if (token.accessToken && token.accessTokenExpires && Date.now() < token.accessTokenExpires) {
+        return token;
+      }
+
+      // Token expired -> clear or refresh
+      return {
+        ...token,
+        accessToken: null,
+        accessTokenExpires: null,
+      };
+    },
+
+    async session({ session, token }) {
+      // Copy token info to session
+      session.user = token.user as typeof session.user;
+      session.accessToken = token.accessToken as string | null;
+      session.accessTokenExpires = token.accessTokenExpires as number | null;
+      return session;
+    },
   },
-  async session({ session, token, user }) {
-    session.accessToken = token.accessToken
-    return session
-  }
-}
 
 }
 
