@@ -201,8 +201,7 @@ const VideoCard = ({ video }: { video: Video }) => {
           <div className="flex gap-3">
             {channelInfo && (
               <Avatar className="w-9 h-9 flex-shrink-0">
-                <AvatarImage src={channelInfo.avatar || "/placeholder.svg"} alt={channelInfo.name} />
-                <AvatarFallback>{channelInfo.name.slice(0, 2)}</AvatarFallback>
+                <AvatarFallback>{channelInfo.name.slice(0, 1)}</AvatarFallback>
               </Avatar>
             )}
             <div className="min-w-0 flex-1">
@@ -264,8 +263,7 @@ const VideoListItem = ({ video }: { video: Video }) => {
           {channelInfo && (
             <div className="flex items-center gap-2 mb-2">
               <Avatar className="w-5 h-5 md:w-6 md:h-6">
-                <AvatarImage src={channelInfo.avatar || "/placeholder.svg"} alt={channelInfo.name} />
-                <AvatarFallback className="text-xs">{channelInfo.name.slice(0, 2)}</AvatarFallback>
+                <AvatarFallback className="text-xs">{channelInfo.name.slice(0, 1)}</AvatarFallback>
               </Avatar>
               <div className="flex items-center gap-1">
                 <p className="text-xs md:text-sm text-gray-600">{channelInfo.name}</p>

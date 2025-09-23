@@ -26,7 +26,7 @@ import {
   Heart,
   User,
   Plus,
-  ChevronRight,
+  ChartBar,
 } from "lucide-react";
 import VoiceSearchDialog from "@/components/common/voice-search-dialog";
 import SignLanguageDialog from "@/components/common/sign-language-dialog";
@@ -332,7 +332,7 @@ export default function Navbar() {
               </Button>
 
               {session?.user &&
-                <Link href="/studios" target="_blank" className="hidden md:block">
+                <Link href="/upload" target="_blank" className="hidden md:block">
                   <Button
                     variant="default"
                     size="sm"
@@ -340,7 +340,7 @@ export default function Navbar() {
                     title="Open Studio"
                   >
                     <Upload className="h-4 w-4" />
-                    <span className="font-medium text-sm">Studio</span>
+                    <span className="font-medium text-sm">Upload</span>
                   </Button>
                 </Link>
               }
@@ -450,29 +450,17 @@ export default function Navbar() {
                   Liked
                 </span>
               </Link>
-              <Link
-                href={"/history"}
-                className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-100"
-                onClick={closeSidebar}
-              >
-                <Clock className="w-6 h-6 flex-shrink-0" />
-                <span
-                  className={`${!isSidebarOpen ? "md:hidden xl:hidden" : ""}`}
-                >
-                  History
-                </span>
-              </Link>
               {session?.user &&
                 <Link
-                  href={"/studios"}
+                  href={"/analytics"}
                   className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-100"
                   onClick={closeSidebar}
                 >
-                  <Clock className="w-6 h-6 flex-shrink-0" />
+                  <ChartBar className="w-6 h-6 flex-shrink-0" />
                   <span
                     className={`${!isSidebarOpen ? "md:hidden xl:hidden" : ""}`}
                   >
-                    Studios
+                    Analytics
                   </span>
                 </Link>
               }
@@ -505,7 +493,7 @@ export default function Navbar() {
             <span className="text-xs font-medium leading-tight">Subs</span>
           </Link>
           <Link
-            href="/studios"
+            href="/analytics"
             className="flex flex-1 flex-col items-center justify-center py-2"
           >
             <div className="bg-red-600 rounded-full p-2 mb-0.5">
