@@ -83,7 +83,7 @@ export default function WatchPage({ video, channel, videoUrl, captionUrl, signVi
                     <div className="text-sm text-muted-foreground">{Math.max(0, subscribersCount)} subscribers</div>
                   </div>
                 </div>
-                {session?.data?.user?.id !== video.uploaderId && (
+                {session?.user?.id !== video.uploaderId && (
                     <Button className="shrink-0" size="lg" onClick={onToggleSubscribe}>
                       {isSubscribed ? "Subscribed" : "Subscribe"}
                     </Button>
