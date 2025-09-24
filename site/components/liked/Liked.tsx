@@ -1,10 +1,11 @@
+'use client';
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Bookmark, CheckCircle, Grid3X3, List, Play, Clock, Heart } from 'lucide-react';
-// import { getlikedVideos, type Video } from "@/data/draft";
 import { getLikedVideos } from "@/lib/library";
 import { useSession } from "next-auth/react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,16 +30,13 @@ const Library = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'title'>('recent');
   const [likedVideos, setLikedVideos] = useState<{video: Video}[]>([]);
-  const [video, setVideo] = useState();
 
   useEffect(() => {
-    if (status === 'authenticated') {
       ( async () => {
         const liked = await getLikedVideos(session?.user?.id);
         setLikedVideos(liked);
       })();
-    }
-  },[status]);
+  },[]);
 
   if (status === 'loading') {
     return (
@@ -126,23 +124,13 @@ const Library = () => {
           viewMode === 'grid' ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {likedVideos.map((video) => (
-                <Image key={video.video.id}
-                  src={video.video.thumbnailUrl || "/placeholder.svg"}
-                  alt={video.video.title}
-                  fill
-                  className="object-cover group-hover:scale-102 transition-transform duration-500"
-                />
+                <VideoCard key={video.video.id} video={video.video} />
               ))}
             </div>
           ) : (
             <div className="space-y-4">
               {likedVideos.map((video) => (
-                <Image key={video.video.id}
-                  src={video.video.thumbnailUrl || "/placeholder.svg"}
-                  alt={video.video.title}
-                  fill
-                  className="object-cover group-hover:scale-102 transition-transform duration-500"
-                />
+                <VideoCard key={video.video.id} video={video.video} />
               ))}
             </div>
           )

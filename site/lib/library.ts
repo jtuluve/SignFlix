@@ -23,3 +23,14 @@ export async function getLikedVideos(userId: string | undefined) {
   }
 });
 }
+
+export async function isLikedByUser(videoId: string, userId: string) {
+console.log("hbcjhbjch",userId);
+  if (!userId) {
+    return false;
+  }
+    const like = await db.like.findFirst({
+    where: { videoId, userId },
+  });
+  return !!like;
+}

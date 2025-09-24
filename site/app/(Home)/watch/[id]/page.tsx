@@ -1,9 +1,50 @@
 
 import WatchPage from "./WatchPage";
 import { getVideobyId } from "@/utils/video";
+import type { Metadata } from "next";
 
 type PageProps = {
   params?: { id?: string };
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const id = params?.id ?? "1";
+  const video = await getVideobyId(id);
+
+  if (!video) {
+    return {
+      title: "Video Not Found - SignFlix",
+      description: "The video you are looking for does not exist.",
+    };
+  }
+
+  const title = video.title;
+  const description = video.description || "Watch this video on SignFlix.";
+  const thumbnailUrl = video.thumbnailUrl || "/placeholder.svg";
+
+  return {
+    title: title,
+    description: description,
+    openGraph: {
+      title: title,
+      description: description,
+      images: [
+        {
+          url: thumbnailUrl,
+          alt: title,
+        },
+      ],
+      type: "video.other",
+      siteName: "SignFlix",
+    },
+    twitter: {
+      card: "player",
+      title: title,
+      description: description,
+      images: [thumbnailUrl],
+      creator: video.uploader.username,
+    },
+  };
 }
 
 export default async function Page({ params }: PageProps) {

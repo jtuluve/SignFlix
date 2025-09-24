@@ -97,10 +97,11 @@ export default async function uploadVideo({
 
     //pushing to queue
 
-    const queueName = "videoprocessing";
+    const queueName = "videos";
     const queueClient = new QueueClient(queueConnectionString, queueName);
     await queueClient.createIfNotExists();
     await queueClient.sendMessage(videoCreated.id);
+    await fetch(process.env.QUEUE_API_URL, { method: "POST" });
   } catch (e: any) {
     console.log(e);
   }
