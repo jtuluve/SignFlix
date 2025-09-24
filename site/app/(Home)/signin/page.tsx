@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AuthPage() {
     const [name, setName] = useState("");
@@ -104,7 +105,7 @@ export default function AuthPage() {
                             </CardContent>
                             <CardFooter>
                                 <Button onClick={handleSignIn} disabled={isLoading} className="w-full">
-                                    {isLoading ? "Logging in..." : "Login"}
+                                    {isLoading ? <Skeleton className="h-4 w-24" /> : "Login"}
                                 </Button>
                             </CardFooter>
                         </Card>
@@ -134,7 +135,7 @@ export default function AuthPage() {
                             </CardContent>
                             <CardFooter>
                                 <Button onClick={handleSignUp} disabled={isLoading} className="w-full">
-                                    {isLoading ? "Signing up..." : "Sign Up"}
+                                    {isLoading ? <Skeleton className="h-4 w-24" /> : "Sign Up"}
                                 </Button>
                             </CardFooter>
                         </Card>

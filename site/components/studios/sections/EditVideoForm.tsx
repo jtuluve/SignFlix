@@ -11,7 +11,7 @@ import { getVideobyId } from "@/utils/video";
 import updateVideoContent from "@/lib/updateVideo";
 import Link from "next/link";
 import Image from "next/image";
-import { ImageIcon, Loader2 } from "lucide-react";
+import { ImageIcon } from "lucide-react";
 import type { UploadedVideo } from "./VideosSection";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -99,7 +99,7 @@ export default function EditVideoForm({ id }: { id: string }) {
             <Button variant="outline">Cancel</Button>
           </Link>
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Saving...</> : "Save Changes"}
+            {isSaving ? <Skeleton className="h-4 w-20" /> : "Save Changes"}
           </Button>
         </div>
       </div>
