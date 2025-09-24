@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 	title: "SignFlix - Video Streaming with Sign Language",
 	description:
 		"An accessible video streaming platform with integrated sign language interpretation for the deaf and hard-of-hearing community.",
+	icons: { icon: "/favicon.ico" },
 };
 
 export default async function RootLayout({

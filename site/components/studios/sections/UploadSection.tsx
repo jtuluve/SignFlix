@@ -12,8 +12,6 @@ import uploadVideo from "@/lib/uploadVideo";
 import { Toaster, toast } from 'sonner';
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
-import { generateTags } from "@/lib/generateTags";
 
 export default function UploadSection() {
   const [dragActive, setDragActive] = useState(false);
@@ -24,7 +22,6 @@ export default function UploadSection() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
 
   const [metadata, setMetadata] = useState({
     title: "",
@@ -106,15 +103,11 @@ export default function UploadSection() {
 
     setIsPublishing(true);
     try {
-      const userTags = metadata.tags.split(",").map((t) => t.trim()).filter(Boolean);
-      const aiGeneratedTags = await generateTags(metadata.title, metadata.description, userTags);
-      const combinedTags = Array.from(new Set([...userTags, ...aiGeneratedTags]));
-
-      const data = { ...metadata, tags: combinedTags };
+      const tags = metadata.tags.split(",").map((t) => t.trim()).filter(Boolean);
+      const data = { ...metadata, tags };
       await uploadVideo({ data, videoFile, captionFile, thumbnailFile });
-      toast.success("Video uploaded successfully! Redirecting to content page...");
+      toast.success("Video published successfully!");
       resetForm();
-      router.push("/content");
     } catch (error) {
       console.error("Failed to publish video:", error);
       toast.error("Failed to publish video. Please try again.");
