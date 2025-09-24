@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     description: "Manage your channel subscriptions on SignFlix.",
     images: [
       {
-        url: "/placeholder-logo.png", // Using a default placeholder logo
+        url: "/placeholder-logo.png", 
         alt: "SignFlix Subscriptions",
       },
     ],

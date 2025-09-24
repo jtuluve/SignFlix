@@ -16,7 +16,7 @@ export async function generateMetadata({
       description: description,
       images: [
         {
-          url: "/placeholder-logo.png", // Using a default placeholder logo
+          url: "/placeholder-logo.png", 
           alt: title,
         },
       ],
