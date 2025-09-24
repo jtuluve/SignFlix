@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, {
@@ -10,18 +9,21 @@ import React, {
   useState,
 } from "react";
 import Image from "next/image";
+import { newExtract } from "@/lib/newExtract";
+import { Prisma } from "@prisma/client";
 
 type CaptionType = {
-  sequence: number;
-  start_time: string;
-  end_time: string;
-  caption: string;
+  id: number;
+  start: string;
+  end: string;
+  text: string;
 };
 
 type WatchViewProps = {
   videoUrl?: string | "/test.mp4";
   captionUrl?: string | null;
   posterUrl?: string | null;
+  video?: Prisma.VideoCreateInput;
 
   signVideoUrl?: string | "/test.mp4";
   signCaptionUrl?: string | null;
@@ -37,6 +39,7 @@ export default function WatchView({
   signCaptionUrl,
   initialSpeed = 1.0,
   syncMode,
+  video,
 }: WatchViewProps) {
   const hasVideo = Boolean(videoUrl);
   const hasSignVideo = Boolean(signVideoUrl);
@@ -121,14 +124,42 @@ export default function WatchView({
     );
   }, []);
 
+  useEffect(() => {
+    let captionJson = [];
+    let currentTime = 0;
+    let getCaption;
+    let poseJson;
+
+    (async () => {
+      if (captionUrl) {
+        captionJson = await newExtract(captionUrl);
+      }
+      poseJson = await fetch(video.signTimeUrl).then((res) => res.json());
+      console.log(poseJson);
+      (Array.from(poseJson) as any)?.forEach((element) => fetch(element.poseUrl));
+    })();
+
+    let getCaptionInterval = setInterval(async () => {
+      currentTime = mainRef.current?.currentTime || 0;
+      getCaption = captionJson?.find(
+        (element) => element.start <= currentTime && element.end >= currentTime
+      );
+      let pose = (Array.from(poseJson) as any)?.find((element) => element.sequence == getCaption.id);
+      if (pose) {
+        setPoseData(pose.poseUrl);
+      }
+    }, 1000);
+    return () => clearInterval(getCaptionInterval);
+  }, []);
+
   const findCurrentCaption = useCallback(
     (
       currentTime: number,
       captionsC: CaptionType[]
     ): CaptionType | undefined => {
       return captionsC.find((caption) => {
-        const startTime = timeStringToSeconds(caption.start_time);
-        const endTime = timeStringToSeconds(caption.end_time);
+        const startTime = timeStringToSeconds(caption.start);
+        const endTime = timeStringToSeconds(caption.end);
         return currentTime >= startTime && currentTime <= endTime;
       });
     },
@@ -155,7 +186,7 @@ export default function WatchView({
       ) {
         lastCaptionTime = t;
         const caption = findCurrentCaption(t, captions);
-        const newCaptionText = caption?.caption || "";
+        const newCaptionText = caption?.text || "";
 
         if (newCaptionText !== prevCaptionRef.current) {
           prevCaptionRef.current = newCaptionText;
@@ -189,42 +220,34 @@ export default function WatchView({
 
   useEffect(() => {
     const handleFullScreenChange = () => {
-        if (!mainRef.current || !signRef.current) return;
+      if (!mainRef.current || !signRef.current) return;
 
-        if (document.fullscreenElement === mainRef.current) {
-            if (signRef.current && document.pictureInPictureEnabled) {
-                signRef.current.requestPictureInPicture();
-            }
-        } else if (document.fullscreenElement === signRef.current) {
-            if (mainRef.current && document.pictureInPictureEnabled) {
-                mainRef.current.requestPictureInPicture();
-            }
-        } else {
-            if (document.pictureInPictureElement) {
-                document.exitPictureInPicture();
-            }
+      if (document.fullscreenElement === mainRef.current) {
+        if (signRef.current && document.pictureInPictureEnabled) {
+          signRef.current.requestPictureInPicture();
         }
+      } else if (document.fullscreenElement === signRef.current) {
+        if (mainRef.current && document.pictureInPictureEnabled) {
+          mainRef.current.requestPictureInPicture();
+        }
+      } else {
+        if (document.pictureInPictureElement) {
+          document.exitPictureInPicture();
+        }
+      }
     };
 
     document.addEventListener("fullscreenchange", handleFullScreenChange);
 
     return () => {
-        document.removeEventListener("fullscreenchange", handleFullScreenChange);
-    }
+      document.removeEventListener("fullscreenchange", handleFullScreenChange);
+    };
   }, []);
 
   return (
     <section className="space-y-4">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <div className="aspect-video rounded-lg overflow-hidden relative border bg-background">
-          {createElement("pose-viewer", {
-            className: "w-full h-full",
-            src: "/test/shape.pose",
-            "aria-label": "Sign language pose viewer",
-            loop: "true",
-            renderer: "svg",
-            suppressHydrationWarning: true,
-          })}
           {captionUrl && captions.length > 0 ? (
             <>
               <div className="absolute inset-x-0 top-0 bg-black/40 text-white text-xs px-3 py-1">
@@ -236,28 +259,15 @@ export default function WatchView({
                 </div>
               )}
             </>
-          ) : hasSignVideo ? (
-            <video
-              ref={signRef}
-              className="w-full h-full"
-              controls
-              muted
-              playsInline
-              preload="metadata"
-              poster="/placeholder.svg?height=720&width=1280"
-              aria-label="Sign language simulation video"
-            >
-              <source src={signVideoUrl} type="video/mp4" />
-              {signCaptionUrl ? (
-                <track
-                  src={signCaptionUrl}
-                  kind="captions"
-                  srcLang="en"
-                  label="English"
-                />
-              ) : null}
-              {"Your browser does not support the video tag!"}
-            </video>
+          ) : _poseData ? (
+            createElement("pose-viewer", {
+              className: "w-full h-full",
+              src: _poseData,
+              "aria-label": "Sign language pose viewer",
+              loop: "true",
+              renderer: "svg",
+              suppressHydrationWarning: true,
+            })
           ) : (
             <>
               <Image
