@@ -64,8 +64,6 @@ export default function VideosSection() {
     const [hasMore, setHasMore] = useState(true);
     const [page, setPage] = useState(1);
 
-
-
     const handleDelete = async (id: string) => {
         if (!session?.user?.id) {
             toast.error("Authentication error. Please sign in again.");
@@ -178,7 +176,7 @@ export default function VideosSection() {
                     {hasMore && (
                         <div className="flex justify-center mt-8">
                             <Button onClick={handleLoadMore} disabled={isLoading}>
-                                {isLoading ? "Loading..." : "Load More"}
+                                {isLoading ? <Skeleton className="h-4 w-20" /> : "Load More"}
                             </Button>
                         </div>
                     )}

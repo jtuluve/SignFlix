@@ -94,7 +94,6 @@ const Subscriptions = () => {
       }
     } catch (error) {
       console.error('Error unsubscribing:', error);
-      // You can add toast notification here
     } finally {
       setUnsubscribeLoading(null);
     }
