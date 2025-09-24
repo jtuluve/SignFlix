@@ -4,6 +4,7 @@ import path = require("path");
 import { downloadCaptions, textToPoseFile } from "./helpers/captions";
 import { uploadToBlob } from "./helpers/blob";
 import * as fs from "fs";
+import convertToASL from "./gemini.js";
 
 const QUEUE_NAME = process.env.VIDEO_QUEUE_NAME || "videos";
 
@@ -22,6 +23,7 @@ async function processSingleVideo(videoId: string): Promise<void> {
     }
 
     for (const caption of captions) {
+      caption.caption = await convertToASL(caption.caption);
       // 1. Caption -> Pose file
       const poseFile = await textToPoseFile(caption.caption);
       const posePath = path.join("./poses", `pose_${caption.sequence}.pose`);
