@@ -62,7 +62,7 @@ jobs:
         with:
           languages: javascript
           config-file: ./.github/codeql/codeql-config.yml
-          queries: ${{ github.ref_name == 'main' && 'security-extended' || 'security-and-quality' }}
+          queries: security-and-quality
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -107,6 +107,7 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: ./site/package-lock.json
+        working-directory: ./site
 
       - name: Install Node Dependencies (site)
         run: npm ci
