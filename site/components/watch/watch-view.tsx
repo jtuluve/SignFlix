@@ -42,7 +42,7 @@ export default function WatchView({
   video,
 }: WatchViewProps) {
   const hasVideo = Boolean(videoUrl);
-  const hasSignVideo = Boolean(signVideoUrl);
+  const [isMainVideoPlaying, setIsMainVideoPlaying] = useState(false);
 
   const mainRef = useRef<HTMLVideoElement | null>(null);
   const signRef = useRef<HTMLVideoElement | null>(null);
@@ -111,9 +111,19 @@ export default function WatchView({
     const targetRate = syncMode === "adjust" ? numericSpeed : 1.0;
     if (main) main.playbackRate = targetRate;
     if (sign) sign.playbackRate = targetRate;
+    main.onplay = async () => {
+      setIsMainVideoPlaying(true);
+      console.log("Trii")
+      sign?.play();
+    };
+    main.onpause = () => {
+      setIsMainVideoPlaying(false);
+      // sign?.pause();
+    }
   }, [syncMode, numericSpeed]);
 
   const timeStringToSeconds = useCallback((timeString: string): number => {
+    if(typeof timeString !== "string") return timeString;
     const [hours, minutes, seconds] = timeString.split(":");
     const [sec, ms] = seconds.split(",");
     return (
@@ -133,6 +143,7 @@ export default function WatchView({
     (async () => {
       if (captionUrl) {
         captionJson = await newExtract(captionUrl);
+        setCaptions(captionJson);
       }
       poseJson = await fetch(video.signTimeUrl).then((res) => res.json());
       console.log(poseJson);
@@ -144,7 +155,7 @@ export default function WatchView({
       getCaption = captionJson?.find(
         (element) => element.start <= currentTime && element.end >= currentTime
       );
-      let pose = (Array.from(poseJson) as any)?.find((element) => element.sequence == getCaption.id);
+      let pose = (Array.from(poseJson) as any)?.find((element) => element.sequence == getCaption?.id);
       if (pose) {
         setPoseData(pose.poseUrl);
       }
@@ -179,16 +190,36 @@ export default function WatchView({
       const t = main.currentTime || 0;
       setMainTime(t);
 
+      if (signRef.current?.ended && main.paused) {
+        main.play();
+      }
+      //  else if (isMainVideoPlaying && sign.paused) {
+      //   sign.play();
+      // }
+
       if (
         captionUrl &&
         captions.length > 0 &&
         Math.abs(t - lastCaptionTime) > 0.1
       ) {
+        console.log("AAAAA")
         lastCaptionTime = t;
         const caption = findCurrentCaption(t, captions);
         const newCaptionText = caption?.text || "";
 
+        if (caption) {
+          const endTime = timeStringToSeconds(caption.end);
+          if (t >= endTime) {
+            if (!main.paused) {
+              main.pause();
+            }
+          }
+        }
+
         if (newCaptionText !== prevCaptionRef.current) {
+          if (signRef.current && !signRef.current.ended) {
+            main.pause();
+          }
           prevCaptionRef.current = newCaptionText;
           setCurrentCaption(newCaptionText);
 
@@ -248,7 +279,7 @@ export default function WatchView({
     <section className="space-y-4">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <div className="aspect-video rounded-lg overflow-hidden relative border bg-background">
-          {captionUrl && captions.length > 0 ? (
+          {captionUrl && captions.length > 0 && (
             <>
               <div className="absolute inset-x-0 top-0 bg-black/40 text-white text-xs px-3 py-1">
                 {"Pose Simulation — synchronized with captions"}
@@ -259,13 +290,15 @@ export default function WatchView({
                 </div>
               )}
             </>
-          ) : _poseData ? (
+          ) }
+          {_poseData ? (
             createElement("pose-viewer", {
+              ref: signRef,
               className: "w-full h-full",
               src: _poseData,
               "aria-label": "Sign language pose viewer",
-              loop: "true",
-              renderer: "svg",
+              autoplay: true,
+              renderer: "canva",
               suppressHydrationWarning: true,
             })
           ) : (
