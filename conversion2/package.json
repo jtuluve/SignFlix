@@ -1,31 +1,30 @@
 {
-  "name": "conversion",
+  "name": "conversion2",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/src/server.js",
+  "main": "index.js",
   "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "watch": "tsc -w",
-    "clean": "rimraf dist",
-    "prestart": "npm run clean && npm run build",
-    "start": "node dist/src/server.js",
-    "test": "echo \"No tests yet...\""
+    "start": "node dist/src/server.js"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "@azure/storage-blob": "^12.28.0",
-    "@azure/storage-queue": "^12.27.0",
-    "@types/node-fetch": "^2.6.13",
-    "dotenv": "^17.2.2",
-    "node-fetch": "^3.3.2",
-    "parse-srt": "^1.0.0-alpha",
-    "pg": "^8.16.3"
+    "@azure/storage-blob": "^12.17.0",
+    "@azure/storage-queue": "^12.17.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "node-fetch": "^2.6.7",
+    "parse-srt": "latest",
+    "pg": "^8.11.3"
   },
   "devDependencies": {
-    "@types/express": "^5.0.3",
-    "@types/node": "^20.x",
-    "@types/pg": "^8.15.5",
-    "express": "^5.1.0",
-    "rimraf": "^5.0.0",
-    "typescript": "^4.0.0"
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.4",
+    "@types/node-fetch": "^2.6.9",
+    "@types/pg": "^8.10.9",
+    "typescript": "^5.3.3"
   }
 }

@@ -2,6 +2,39 @@ import Link from "next/link";
 import Image from "next/image";
 import { searchVideos, getVideos } from "@/utils/video";
 import { type Video, type User } from "@prisma/client";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  searchParams,
+}: { searchParams: { q?: string } }): Promise<Metadata> {
+  const q = (searchParams?.q ?? "").toString().trim();
+  const title = q ? `Search results for "${q}" - SignFlix` : "Search Videos - SignFlix";
+  const description = q
+    ? `Explore videos related to "${q}" on SignFlix.`
+    : "Search for videos with sign language interpretation on SignFlix.";
+
+  return {
+    title: title,
+    description: description,
+    openGraph: {
+      title: title,
+      description: description,
+      images: [
+        {
+          url: "/placeholder-logo.png", 
+          alt: "SignFlix Search",
+        },
+      ],
+      siteName: "SignFlix",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: title,
+      description: description,
+      images: ["/placeholder-logo.png"],
+    },
+  };
+}
 
 function formatNumberShort(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
