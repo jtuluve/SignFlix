@@ -64,8 +64,6 @@ export default function VideosSection() {
     const [hasMore, setHasMore] = useState(true);
     const [page, setPage] = useState(1);
 
-
-
     const handleDelete = async (id: string) => {
         if (!session?.user?.id) {
             toast.error("Authentication error. Please sign in again.");

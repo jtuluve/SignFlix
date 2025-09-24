@@ -109,7 +109,7 @@ export default function CreatorNav() {
         {session?.user && (
           <div className="mt-8 text-center">
             <Image
-              src={session.user.image || "/placeholder-user.jpg"}
+              src={session.user.image || "/placeholder.jpg"}
               alt="Profile"
               width={80}
               height={80}
