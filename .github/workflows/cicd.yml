@@ -59,8 +59,8 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: javascript
-          config-file: ./.github/codeql/codeql-config.yml
           queries: security-and-quality
+          # ⚠️ If you prefer a config file, remove "queries:" and set config-file
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -80,13 +80,14 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:javascript"
+          output: ./codeql-results-javascript.sarif
 
       - name: Upload CodeQL SARIF file
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: codeql-results-javascript
-          path: codeql-results-javascript.sarif
+          path: ./codeql-results-javascript.sarif
           if-no-files-found: ignore
 
   dependency_check:
@@ -204,7 +205,12 @@ jobs:
       - name: Check for environment variable leaks in build output
         run: |
           echo "Checking for sensitive environment variables in Next.js build output..."
-          grep -rE "(API_KEY|SECRET|TOKEN|PASSWORD|DB_URL)=" ./site/.next || true
+          if grep -rE "(API_KEY|SECRET|TOKEN|PASSWORD|DB_URL)=" ./site/.next; then
+            echo "::error::Potential environment variable leak detected in Next.js build output!"
+            exit 1
+          else
+            echo "No obvious environment variable leaks detected in Next.js build output."
+          fi
         working-directory: ./site
 
       - name: Upload Next.js build artifacts
