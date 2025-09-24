@@ -1,0 +1,220 @@
+name: CI/CD Pipeline with Comprehensive Security
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+  schedule:
+    - cron: '0 2 * * 0'
+
+permissions:
+  contents: write
+  security-events: write
+  actions: read
+
+jobs:
+  gitleaks:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/repo \
+            zricethezav/gitleaks:latest \
+            detect --source /repo --no-git --verbose --report-format json --report-path /repo/gitleaks-report.json
+
+      - name: Upload Gitleaks report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-report
+          path: gitleaks-report.json
+
+ 
+
+  codeql_javascript:
+    name: CodeQL JavaScript Analysis
+    runs-on: ubuntu-latest
+    needs: gitleaks
+    timeout-minutes: 360
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          config-file: ./.github/codeql/codeql-config.yml
+          queries: ${{ github.ref_name == 'main' && 'security-extended' || 'security-and-quality' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Node dependencies (site)
+        run: npm ci
+        working-directory: ./site
+
+      - name: Build JavaScript assets (site)
+        run: npm run build
+        working-directory: ./site
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+          upload: true
+          output: codeql-results-javascript.sarif
+
+      - name: Upload CodeQL SARIF file
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-results-javascript
+          path: codeql-results-javascript.sarif
+
+  dependency_check:
+    name: Dependency Vulnerability Check
+    runs-on: ubuntu-latest
+    needs: gitleaks
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Node Dependencies (site)
+        run: npm ci
+        working-directory: ./site
+
+      - name: Node.js Security Check (npm audit - site)
+        run: npm audit --audit-level=moderate --json > npm-audit-site.json || true
+        working-directory: ./site
+
+      - name: Upload Dependency Reports (site)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-reports-site
+          path: ./site/npm-audit-site.json
+
+  linting:
+    name: Code Quality & Linting
+    runs-on: ubuntu-latest
+    needs: [codeql_javascript, dependency_check]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Node Dependencies (site)
+        run: npm ci
+        working-directory: ./site
+
+      - name: Format Frontend (site)
+        run: npm run format
+        working-directory: ./site
+
+      - name: Lint Frontend (site)
+        run: npm run lint
+        working-directory: ./site
+
+  tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: linting
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Node Dependencies (site)
+        run: npm ci
+        working-directory: ./site
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+  build_and_deploy_nextjs:
+    name: Build and Deploy Next.js Site
+    runs-on: ubuntu-latest
+    needs: [tests, linting] # Depends on tests and linting passing
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ./site/package-lock.json
+
+      - name: Install dependencies (site)
+        run: npm ci
+        working-directory: ./site
+
+      - name: Build Next.js application
+        run: npm run build
+        working-directory: ./site
+
+      - name: Check for environment variable leaks in build output
+        run: |
+          echo "Checking for sensitive environment variables in Next.js build output..."
+          # This is a basic check. You might need to refine the patterns based on your actual sensitive variables.
+          # It looks for common patterns of secrets (e.g., API keys, tokens) in the build output.
+          # Adjust the 'grep' patterns as needed.
+          if grep -rE "(API_KEY|SECRET|TOKEN|PASSWORD|DB_URL)=" ./site/.next/static/chunks/ ./site/.next/server/pages/ ./site/.next/server/app/ ./site/.next/server/chunks/ ./site/.next/server/app-paths-manifest.json ./site/.next/server/next-font-manifest.json ./site/.next/server/next-font-css.json ./site/.next/server/font-loader-manifest.json ./site/.next/server/middleware-manifest.json ./site/.next/server/route-reference.json ./site/.next/server/server-reference.json ./site/.next/server/flight-manifest.json ./site/.next/server/flight-build-manifest.json ./site/.next/server/client-reference-manifest.json ./site/.next/server/client-build-manifest.json ./site/.next/server/app-build-manifest.json ./site/.next/server/app-paths-manifest.json ./site/.next/server/next-font-manifest.json ./site/.next/server/next-font-css.json ./site/.next/server/font-loader-manifest.json ./site/.next/server/middleware-manifest.json ./site/.next/server/route-reference.json ./site/.next/server/server-reference.json ./site/.next/server/flight-manifest.json ./site/.next/server/flight-build-manifest.json ./site/.next/server/client-reference-manifest.json ./site/.next/server/client-build-manifest.json ./site/.next/server/app-build-manifest.json
+          then
+            echo "::error::Potential environment variable leak detected in Next.js build output!"
+            exit 1
+          else
+            echo "No obvious environment variable leaks detected in Next.js build output."
+          fi
+        working-directory: ./site
+
+      - name: Upload Next.js build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextjs-build-site
+          path: ./site/.next
+          retention-days: 7
