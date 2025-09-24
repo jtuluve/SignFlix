@@ -4,7 +4,7 @@ import path = require("path");
 import { downloadCaptions, textToPoseFile } from "./helpers/captions";
 import { uploadToBlob } from "./helpers/blob";
 import * as fs from "fs";
-import convertToASL from "./gemini";
+import convertToASL from "./gemini.js";
 
 const QUEUE_NAME = process.env.VIDEO_QUEUE_NAME || "videos";
 
