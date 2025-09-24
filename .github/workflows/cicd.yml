@@ -55,39 +55,49 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: javascript
-          queries: security-and-quality
-          # ⚠️ If you prefer a config file, remove "queries:" and set config-file
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: npm
+          cache-dependency-path: ./site/package-lock.json
 
-      - name: Install Node dependencies (site)
-        run: npm ci
+      - name: Install dependencies (site)
         working-directory: ./site
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          elif [ -f yarn.lock ]; then
+            yarn install --frozen-lockfile
+          else
+            echo "No lockfile found, generating package-lock.json..."
+            npm install --package-lock-only
+            npm ci
+          fi
 
-      - name: Build JavaScript assets (site)
-        run: npm run build
-        working-directory: ./site
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          config-file: ./.github/workflows/codeql-config.yml
+          working-directory: ./site
+
+      - name: Autobuild (site)
+        uses: github/codeql-action/autobuild@v3
+        with:
+          working-directory: ./site
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:javascript"
-          output: ./codeql-results-javascript.sarif
+          output: codeql-results-javascript.sarif
 
       - name: Upload CodeQL SARIF file
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: codeql-results-javascript
-          path: ./codeql-results-javascript.sarif
+          path: codeql-results-javascript.sarif
           if-no-files-found: ignore
 
   dependency_check:
@@ -103,7 +113,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: npm
           cache-dependency-path: ./site/package-lock.json
 
       - name: Install Node Dependencies (site)
@@ -133,7 +143,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: npm
+          cache-dependency-path: ./site/package-lock.json
 
       - name: Install Node Dependencies (site)
         run: npm ci
@@ -160,7 +171,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: npm
+          cache-dependency-path: ./site/package-lock.json
 
       - name: Install Node Dependencies (site)
         run: npm ci
@@ -191,7 +203,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: npm
           cache-dependency-path: ./site/package-lock.json
 
       - name: Install dependencies (site)
