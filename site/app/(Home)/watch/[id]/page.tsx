@@ -8,7 +8,8 @@ type PageProps = {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const id = params?.id ?? "1";
+  const awaitedParams = await params;
+  const id = awaitedParams?.id ?? "1";
   const video = await getVideobyId(id);
 
   if (!video) {
