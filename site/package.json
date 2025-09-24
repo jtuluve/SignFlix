@@ -11,7 +11,8 @@
 		"db:push": "prisma db push",
 		"db:generate": "prisma generate",
 		"download:models": "node scripts/download-models.js",
-		"setup:ai": "npm run download:models"
+		"setup:ai": "npm run download:models",
+		"test": "jest"
 	},
 	"dependencies": {
 		"@azure/storage-blob": "^12.28.0",
@@ -57,6 +58,8 @@
 		"@types/pg": "^8.0.0",
 		"@types/dotenv": "^8.0.0",
 		"@types/express": "^4.0.0",
-		"typescript": "^5"
+		"typescript": "^5",
+		"jest": "^29.0.0",
+		"jest-environment-jsdom": "^29.0.0"
 	}
 }
