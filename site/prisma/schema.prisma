@@ -34,7 +34,6 @@ model User {
   subscribers   Subscription[] @relation("CreatorSubscriptions")
   likes         Like[]
   views         View[]
-  notifications Notification[]
 }
 
 model Video {
@@ -94,15 +93,4 @@ model View {
     video   Video  @relation(fields: [videoId], references: [id])
 
     @@unique([userId, videoId])
-}
-
-model Notification {
-  id        String   @id @default(cuid())
-  message   String
-  link      String?
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
 }

@@ -35,7 +35,6 @@ import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function Navbar() {
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
@@ -345,18 +344,6 @@ export default function Navbar() {
                 </Link>
               }
 
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hidden md:flex hover:bg-gray-100 rounded-full h-10 w-10 relative"
-                onClick={() => setIsNotificationOpen(true)}
-                title="Notifications"
-                aria-label="Notifications"
-              >
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 h-2 w-2 bg-red-600 rounded-full" />
-              </Button>
-
               {session?.user ? (
                 <Button
                   onClick={async () => {
@@ -518,7 +505,7 @@ export default function Navbar() {
               onClick={() => setActiveTab("profile")}
             >
               <Avatar className="h-5 w-5 mb-0.5">
-                <AvatarImage src="/placeholder-user.jpg" alt="User" />
+                <AvatarImage src="/placeholder.jpg" alt="User" />
                 <AvatarFallback className="bg-purple-600 text-white text-[10px]">
                   U
                 </AvatarFallback>
@@ -538,18 +525,6 @@ export default function Navbar() {
           )}
         </div>
       </nav>
-
-      <Dialog open={isNotificationOpen} onOpenChange={setIsNotificationOpen}>
-        <DialogContent className="w-full max-w-sm mx-auto px-4">
-          <DialogHeader>
-            <DialogTitle>Notifications</DialogTitle>
-          </DialogHeader>
-          <div className="py-6 text-center text-gray-500">
-            <Bell className="mx-auto h-12 w-12 text-gray-300 mb-3" />
-            <p>No new notifications</p>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Voice Search Modal */}
       <VoiceSearchDialog
