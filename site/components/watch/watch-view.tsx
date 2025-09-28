@@ -9,34 +9,26 @@ import React, {
   useState,
 } from "react";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { extractSrt } from "@/lib/extractor";
+import { newExtract } from "@/lib/newExtract";
+import { Prisma } from "@prisma/client";
 
 type CaptionType = {
-  sequence: number;
-  start_time: string;
-  end_time: string;
-  caption: string;
+  id: number;
+  start: string;
+  end: string;
+  text: string;
 };
 
 type WatchViewProps = {
-  videoId?: string;
   videoUrl?: string | "/test.mp4";
   captionUrl?: string | null;
   posterUrl?: string | null;
+  video?: Prisma.VideoCreateInput;
 
   signVideoUrl?: string | "/test.mp4";
   signCaptionUrl?: string | null;
   initialSpeed?: number;
+  syncMode: "adjust" | "pause";
 };
 
 export default function WatchView({
@@ -46,14 +38,15 @@ export default function WatchView({
   signVideoUrl,
   signCaptionUrl,
   initialSpeed = 1.0,
+  syncMode,
+  video,
 }: WatchViewProps) {
   const hasVideo = Boolean(videoUrl);
-  const hasSignVideo = Boolean(signVideoUrl);
+  const [isMainVideoPlaying, setIsMainVideoPlaying] = useState(false);
 
   const mainRef = useRef<HTMLVideoElement | null>(null);
   const signRef = useRef<HTMLVideoElement | null>(null);
 
-  const [syncMode, setSyncMode] = useState<"adjust" | "pause">("adjust");
   const [speed, setSpeed] = useState<string>(() => `${initialSpeed}`);
   const numericSpeed = useMemo(() => Number.parseFloat(speed) || 1.0, [speed]);
   const [captions, setCaptions] = useState<CaptionType[]>([]);
@@ -63,8 +56,6 @@ export default function WatchView({
   const [_mainTime, setMainTime] = useState<number>(0);
 
   const [simOffset, setSimOffset] = useState<number>(0);
-  const [showGrid, setShowGrid] = useState<boolean>(false);
-  const [highContrast, setHighContrast] = useState<boolean>(false);
 
   const prevCaptionRef = useRef<string>("");
   const poseUrlRef = useRef<string | null>(null);
@@ -120,19 +111,19 @@ export default function WatchView({
     const targetRate = syncMode === "adjust" ? numericSpeed : 1.0;
     if (main) main.playbackRate = targetRate;
     if (sign) sign.playbackRate = targetRate;
+    main.onplay = async () => {
+      setIsMainVideoPlaying(true);
+      console.log("Trii")
+      sign?.play();
+    };
+    main.onpause = () => {
+      setIsMainVideoPlaying(false);
+      // sign?.pause();
+    }
   }, [syncMode, numericSpeed]);
 
-  const pauseBoth = () => {
-    mainRef.current?.pause();
-    signRef.current?.pause();
-  };
-
-  const formatOffset = (sec: number) => {
-    if (sec === 0) return "0.0s";
-    return `${sec > 0 ? "+" : ""}${sec.toFixed(1)}s`;
-  };
-
   const timeStringToSeconds = useCallback((timeString: string): number => {
+    if(typeof timeString !== "string") return timeString;
     const [hours, minutes, seconds] = timeString.split(":");
     const [sec, ms] = seconds.split(",");
     return (
@@ -143,32 +134,48 @@ export default function WatchView({
     );
   }, []);
 
+  useEffect(() => {
+    let captionJson = [];
+    let currentTime = 0;
+    let getCaption;
+    let poseJson;
+
+    (async () => {
+      if (captionUrl) {
+        captionJson = await newExtract(captionUrl);
+        setCaptions(captionJson);
+      }
+      poseJson = await fetch(video.signTimeUrl).then((res) => res.json());
+      console.log(poseJson);
+      (Array.from(poseJson) as any)?.forEach((element) => fetch(element.poseUrl));
+    })();
+
+    let getCaptionInterval = setInterval(async () => {
+      currentTime = mainRef.current?.currentTime || 0;
+      getCaption = captionJson?.find(
+        (element) => element.start <= currentTime && element.end >= currentTime
+      );
+      let pose = (Array.from(poseJson) as any)?.find((element) => element.sequence == getCaption?.id);
+      if (pose) {
+        setPoseData(pose.poseUrl);
+      }
+    }, 1000);
+    return () => clearInterval(getCaptionInterval);
+  }, []);
+
   const findCurrentCaption = useCallback(
     (
       currentTime: number,
       captionsC: CaptionType[]
     ): CaptionType | undefined => {
       return captionsC.find((caption) => {
-        const startTime = timeStringToSeconds(caption.start_time);
-        const endTime = timeStringToSeconds(caption.end_time);
+        const startTime = timeStringToSeconds(caption.start);
+        const endTime = timeStringToSeconds(caption.end);
         return currentTime >= startTime && currentTime <= endTime;
       });
     },
     [timeStringToSeconds]
   );
-
-  useEffect(() => {
-    if (captionUrl) {
-      extractSrt(captionUrl)
-        .then((extractedCaptions: CaptionType[]) => {
-          console.log("Extracted captions:", extractedCaptions);
-          setCaptions(extractedCaptions);
-        })
-        .catch((error: unknown) => {
-          console.error("Error extracting captions:", error);
-        });
-    }
-  }, [captionUrl]);
 
   useEffect(() => {
     const main = mainRef.current;
@@ -183,16 +190,36 @@ export default function WatchView({
       const t = main.currentTime || 0;
       setMainTime(t);
 
+      if (signRef.current?.ended && main.paused) {
+        main.play();
+      }
+      //  else if (isMainVideoPlaying && sign.paused) {
+      //   sign.play();
+      // }
+
       if (
         captionUrl &&
         captions.length > 0 &&
         Math.abs(t - lastCaptionTime) > 0.1
       ) {
+        console.log("AAAAA")
         lastCaptionTime = t;
         const caption = findCurrentCaption(t, captions);
-        const newCaptionText = caption?.caption || "";
+        const newCaptionText = caption?.text || "";
+
+        if (caption) {
+          const endTime = timeStringToSeconds(caption.end);
+          if (t >= endTime) {
+            if (!main.paused) {
+              main.pause();
+            }
+          }
+        }
 
         if (newCaptionText !== prevCaptionRef.current) {
+          if (signRef.current && !signRef.current.ended) {
+            main.pause();
+          }
           prevCaptionRef.current = newCaptionText;
           setCurrentCaption(newCaptionText);
 
@@ -222,18 +249,37 @@ export default function WatchView({
     return () => cancelAnimationFrame(raf);
   }, [captionUrl, captions, findCurrentCaption, simOffset, fetchPoseData]);
 
+  useEffect(() => {
+    const handleFullScreenChange = () => {
+      if (!mainRef.current || !signRef.current) return;
+
+      if (document.fullscreenElement === mainRef.current) {
+        if (signRef.current && document.pictureInPictureEnabled) {
+          signRef.current.requestPictureInPicture();
+        }
+      } else if (document.fullscreenElement === signRef.current) {
+        if (mainRef.current && document.pictureInPictureEnabled) {
+          mainRef.current.requestPictureInPicture();
+        }
+      } else {
+        if (document.pictureInPictureElement) {
+          document.exitPictureInPicture();
+        }
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleFullScreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullScreenChange);
+    };
+  }, []);
+
   return (
     <section className="space-y-4">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <div className="order-1 lg:order-1 aspect-video rounded-lg overflow-hidden relative border bg-background">
-          {createElement("pose-viewer", {
-            className: "w-full h-full",
-            src: "/test/shape.pose",
-            "aria-label": "Sign language pose viewer",
-            loop: "true",
-            renderer: "svg",
-          })}
-          {captionUrl && captions.length > 0 ? (
+        <div className="aspect-video rounded-lg overflow-hidden relative border bg-background">
+          {captionUrl && captions.length > 0 && (
             <>
               <div className="absolute inset-x-0 top-0 bg-black/40 text-white text-xs px-3 py-1">
                 {"Pose Simulation — synchronized with captions"}
@@ -244,28 +290,17 @@ export default function WatchView({
                 </div>
               )}
             </>
-          ) : hasSignVideo ? (
-            <video
-              ref={signRef}
-              className="w-full h-full"
-              controls={false}
-              muted
-              playsInline
-              preload="metadata"
-              poster="/placeholder.svg?height=720&width=1280"
-              aria-label="Sign language simulation video"
-            >
-              <source src={signVideoUrl} type="video/mp4" />
-              {signCaptionUrl ? (
-                <track
-                  src={signCaptionUrl}
-                  kind="captions"
-                  srcLang="en"
-                  label="English"
-                />
-              ) : null}
-              {"Your browser does not support the video tag!"}
-            </video>
+          ) }
+          {_poseData ? (
+            createElement("pose-viewer", {
+              ref: signRef,
+              className: "w-full h-full",
+              src: _poseData,
+              "aria-label": "Sign language pose viewer",
+              autoplay: true,
+              renderer: "canva",
+              suppressHydrationWarning: true,
+            })
           ) : (
             <>
               <Image
@@ -281,12 +316,9 @@ export default function WatchView({
               </div>
             </>
           )}
-          <div className="absolute inset-x-0 top-0 bg-black/40 text-white text-xs px-3 py-1">
-            {"Simulation — synchronized with main"}
-          </div>
         </div>
 
-        <div className="order-2 lg:order-2 aspect-video rounded-lg overflow-hidden bg-black relative">
+        <div className="aspect-video rounded-lg overflow-hidden bg-black relative">
           {hasVideo ? (
             <React.Fragment>
               <video
@@ -335,129 +367,6 @@ export default function WatchView({
               </div>
             </>
           )}
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="min-w-40">
-            <label htmlFor="speed" className="block text-sm font-medium mb-1">
-              {"Playback speed"}
-            </label>
-            <Select value={speed} onValueChange={setSpeed}>
-              <SelectTrigger aria-label="Select playback speed">
-                <SelectValue placeholder="1.0x" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0.5">{"0.5x"}</SelectItem>
-                <SelectItem value="0.75">{"0.75x"}</SelectItem>
-                <SelectItem value="1.0">{"1.0x"}</SelectItem>
-                <SelectItem value="1.25">{"1.25x"}</SelectItem>
-                <SelectItem value="1.5">{"1.5x"}</SelectItem>
-                <SelectItem value="2.0">{"2.0x"}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="min-w-40">
-            <label htmlFor="sync" className="block text-sm font-medium mb-1">
-              {"Sync strategy"}
-            </label>
-            <Select
-              value={syncMode}
-              onValueChange={(v: string) =>
-                setSyncMode(v as "adjust" | "pause")
-              }
-            >
-              <SelectTrigger aria-label="Select sync strategy">
-                <SelectValue placeholder="Adjust speed (default)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="adjust">
-                  {"Adjust speed (default)"}
-                </SelectItem>
-                <SelectItem value="pause">{"Pause to match"}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {syncMode === "pause" ? (
-            <div className="flex items-end">
-              <Button
-                variant="outline"
-                onClick={pauseBoth}
-                disabled={!hasVideo && !hasSignVideo}
-              >
-                {"Pause both now"}
-              </Button>
-            </div>
-          ) : null}
-        </div>
-
-        <p className="text-xs text-muted-foreground">
-          {
-            "Both videos follow the same speed. Use offset below for fine alignment."
-          }
-        </p>
-      </div>
-
-      <div className="rounded-lg border p-3">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex-1 min-w-[220px]">
-            <label
-              htmlFor="sim-offset"
-              className="block text-sm font-medium mb-1"
-            >
-              {"Simulation offset (lead/lag)"}
-            </label>
-            <Slider
-              value={[simOffset]}
-              min={-2}
-              max={2}
-              step={0.1}
-              onValueChange={(v: number[]) => setSimOffset(v[0] ?? 0)}
-              aria-label="Simulation offset seconds"
-            />
-            <span className="text-xs text-muted-foreground">
-              {formatOffset(simOffset)}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Switch
-              id="sim-grid"
-              checked={showGrid}
-              onCheckedChange={setShowGrid}
-            />
-            <label htmlFor="sim-grid" className="text-sm">
-              {"Grid (visual aid)"}
-            </label>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Switch
-              id="sim-contrast"
-              checked={highContrast}
-              onCheckedChange={setHighContrast}
-            />
-            <label htmlFor="sim-contrast" className="text-sm">
-              {"High contrast (visual aid)"}
-            </label>
-          </div>
-
-          <div className="ml-auto">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setSimOffset(0);
-                setShowGrid(false);
-                setHighContrast(false);
-              }}
-            >
-              {"Reset"}
-            </Button>
-          </div>
         </div>
       </div>
     </section>

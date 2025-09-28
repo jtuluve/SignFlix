@@ -16,7 +16,7 @@ export async function getVideos() {
   });
 }
 
-export async function getVideo(id: string) {
+export async function getVideobyId(id: string) {
   return await db.video.findUnique({
     where: { id },
     include: {
@@ -31,7 +31,7 @@ export async function getVideo(id: string) {
   });
 }
 
-export async function getVideosByUser(uploaderId: string) {
+export async function getVideosByUser(uploaderId: string, take?: number, skip?: number) {
   return await db.video.findMany({
     where: { uploaderId },
     include: {
@@ -43,6 +43,8 @@ export async function getVideosByUser(uploaderId: string) {
       },
     },
     orderBy: { createdAt: "desc" },
+    take,
+    skip,
   });
 }
 
@@ -61,32 +63,55 @@ export async function getVideosByCategory(category: string) {
   });
 }
 
+// Search videos by title, description, or tags with exact string
+// export async function searchVideos(query: string) {
+//   // Sanitize and validate query
+//   const sanitizedQuery = query.trim();
+//   if (!sanitizedQuery || sanitizedQuery.length > 100) {
+//     throw new Error('Search query too long');
+//   }
+
+//   return await db.video.findMany({
+//     where: {
+//       OR: [
+//         { title: { contains: sanitizedQuery, mode: "insensitive" } },
+//         { description: { contains: sanitizedQuery, mode: "insensitive" } },
+//         { tags: { hasSome: [sanitizedQuery] } },
+//       ],
+//     },
+//     include: {
+//       uploader: true,
+//       _count: {
+//         select: {
+//           likesList: true,
+//         },
+//       },
+//     },
+//     orderBy: { createdAt: "desc" },
+//   });
+// }
+
 export async function searchVideos(query: string) {
-  // Sanitize and validate query
   const sanitizedQuery = query.trim();
   if (!sanitizedQuery || sanitizedQuery.length > 100) {
-    throw new Error('Search query too long');
+    throw new Error("Search query too long");
   }
 
-  return await db.video.findMany({
-    where: {
-      OR: [
-        { title: { contains: sanitizedQuery, mode: "insensitive" } },
-        { description: { contains: sanitizedQuery, mode: "insensitive" } },
-        { tags: { hasSome: [sanitizedQuery] } },
-      ],
-    },
-    include: {
-      uploader: true,
-      _count: {
-        select: {
-          likesList: true,
-        },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  return await db.$queryRawUnsafe(`
+    SELECT v.*, u.*, COUNT(l."id") as "likesCount"
+    FROM "Video" v
+    JOIN "User" u ON u.id = v."uploaderId"
+    LEFT JOIN "Like" l ON l."videoId" = v.id
+    WHERE to_tsvector('english', v.title || ' ' || v.description || ' ' || array_to_string(v.tags, ' '))
+      @@ plainto_tsquery('english', $1)
+    GROUP BY v.id, u.id
+    ORDER BY ts_rank(
+      to_tsvector('english', v.title || ' ' || v.description || ' ' || array_to_string(v.tags, ' ')),
+      plainto_tsquery('english', $1)
+    ) DESC;
+  `, sanitizedQuery);
 }
+
 
 export async function createVideo(video: Prisma.VideoCreateInput) {
   return await db.video.create({
@@ -116,32 +141,4 @@ export async function incrementVideoViews(id: string) {
     where: { id },
     data: { views: { increment: 1 } },
   });
-}
-
-export async function incrementVideoLikes(id: string) {
-  try {
-    return await db.video.update({
-      where: { id },
-      data: { likes: { increment: 1 } },
-    });
-  } catch (error) {
-    console.error('Failed to increment video likes:', error);
-    throw error;
-  }
-}
-
-export async function decrementVideoLikes(id: string) {
-  try {
-    const video = await db.video.findUnique({ where: { id }, select: { likes: true } });
-    if (!video || video.likes <= 0) {
-      throw new Error('Cannot decrement likes below zero');
-    }
-    return await db.video.update({
-      where: { id },
-      data: { likes: { decrement: 1 } },
-    });
-  } catch (error) {
-    console.error('Failed to decrement video likes:', error);
-    throw error;
-  }
 }

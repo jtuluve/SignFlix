@@ -53,6 +53,23 @@ export async function checkSubscription(
   });
 }
 
+export async function toggleSubscription(creatorId: string, subscriberId: string) {
+  const existingSubscription = await checkSubscription(subscriberId, creatorId);
+
+  if (existingSubscription) {
+    // If already subscribed, unsubscribe
+    await deleteSubscription(existingSubscription.id);
+    return { subscribed: false };
+  } else {
+    // If not subscribed, subscribe
+    await createSubscription({
+      subscriber: { connect: { id: subscriberId } },
+      creator: { connect: { id: creatorId } },
+    });
+    return { subscribed: true };
+  }
+}
+
 export async function createSubscription(
   subscription: Prisma.SubscriptionCreateInput
 ) {
@@ -64,6 +81,7 @@ export async function createSubscription(
         creator: true,
       },
     });
+
 
     await tx.user.update({
       where: { id: newSubscription.creatorId },
@@ -85,28 +103,6 @@ export async function deleteSubscription(id: string) {
 
     await tx.user.update({
       where: { id: subscription.creatorId },
-      data: { subscribersCount: { decrement: 1 } },
-    });
-
-    return subscription;
-  });
-}
-
-export async function unsubscribe(subscriberId: string, creatorId: string) {
-  return await db.$transaction(async (tx) => {
-    const subscription = await tx.subscription.findFirst({
-      where: {
-        subscriberId,
-        creatorId,
-      },
-    });
-
-    if (!subscription) throw new Error("Subscription not found");
-
-    await tx.subscription.delete({ where: { id: subscription.id } });
-
-    await tx.user.update({
-      where: { id: creatorId },
       data: { subscribersCount: { decrement: 1 } },
     });
 

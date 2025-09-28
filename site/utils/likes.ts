@@ -1,6 +1,8 @@
 "use server";
 
 import { db, type Prisma } from "@/utils/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function getLikes(page = 1, limit = 100) {
   const skip = (page - 1) * limit;
@@ -22,6 +24,25 @@ export async function getLike(id: string) {
       video: true,
     },
   });
+}
+
+
+export async function unlikeVideo(videoId: string) {
+  const session = await getServerSession(authOptions as any);
+  const userId = (session as any)?.user?.id as string | undefined;
+  if (!userId) throw new Error("Not authenticated");
+
+  const like = await db.like.findFirst({
+    where: {
+      videoId,
+      userId,
+    },
+  });
+  if (!like) {
+    // Nothing to unlike; return early
+    return null;
+  }
+  return await deleteLike(like.id);
 }
 
 export async function getUserLikes(userId: string) {
@@ -51,12 +72,18 @@ export async function getVideoLikes(videoId: string, page = 1, limit = 50) {
   });
 }
 
-export async function checkLike(userId: string, videoId: string) {
-  return await db.like.findFirst({
-    where: {
-      userId,
-      videoId,
-    },
+export async function likeVideo(videoId: string) {
+  const session = await getServerSession(authOptions as any);
+  const userId = (session as any)?.user?.id as string | undefined;
+  if (!userId) throw new Error("Not authenticated");
+
+  // Avoid duplicate likes
+  const existing = await db.like.findFirst({ where: { userId, videoId } });
+  if (existing) return existing;
+
+  return await createLike({
+    user: { connect: { id: userId } },
+    video: { connect: { id: videoId } },
   });
 }
 
@@ -96,35 +123,5 @@ export async function deleteLike(id: string) {
     }
 
     return like;
-  });
-}
-
-export async function toggleLike(userId: string, videoId: string) {
-  return await db.$transaction(async (tx) => {
-    const existingLike = await tx.like.findFirst({
-      where: { userId, videoId },
-    });
-
-    if (existingLike) {
-      await tx.like.delete({ where: { id: existingLike.id } });
-      await tx.video.update({
-        where: { id: videoId },
-        data: { likes: { decrement: 1 } },
-      });
-      return { liked: false, like: null };
-    } else {
-      const newLike = await tx.like.create({
-        data: {
-          user: { connect: { id: userId } },
-          video: { connect: { id: videoId } },
-        },
-        include: { user: true, video: true },
-      });
-      await tx.video.update({
-        where: { id: videoId },
-        data: { likes: { increment: 1 } },
-      });
-      return { liked: true, like: newLike };
-    }
   });
 }

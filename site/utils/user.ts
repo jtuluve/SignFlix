@@ -61,6 +61,12 @@ export async function updateUser(id: string, user: Prisma.UserUpdateInput) {
   return await db.user.update({ where: { id }, data: user });
 }
 
+export async function getSubscribersCount(userId: string) {
+  return await db.subscription.count({
+    where: { creatorId: userId },
+  });
+}
+
 export async function incrementSubscribersCount(userId: string) {
   return await db.user.update({
     where: { id: userId },

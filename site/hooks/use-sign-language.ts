@@ -8,7 +8,7 @@ import { FilesetResolver, HandLandmarker, type HandLandmarkerResult } from "@med
 // Accurate ASL Letter Recognition based on actual hand landmark positions
 function recognizeASLLetter(landmarks: { x: number; y: number; z: number }[]): string | null {
   if (landmarks.length !== 21) return null // MediaPipe hands has 21 landmarks
-  
+
   // MediaPipe hand landmark indices
   const WRIST = 0
   const THUMB_CMC = 1, THUMB_MCP = 2, THUMB_IP = 3, THUMB_TIP = 4
@@ -16,75 +16,75 @@ function recognizeASLLetter(landmarks: { x: number; y: number; z: number }[]): s
   const MIDDLE_MCP = 9, MIDDLE_PIP = 10, MIDDLE_DIP = 11, MIDDLE_TIP = 12
   const RING_MCP = 13, RING_PIP = 14, RING_DIP = 15, RING_TIP = 16
   const PINKY_MCP = 17, PINKY_PIP = 18, PINKY_DIP = 19, PINKY_TIP = 20
-  
+
   // Precise helper functions for ASL recognition
   const distance = (p1: number, p2: number): number => {
     const landmark1 = landmarks[p1], landmark2 = landmarks[p2]
-    return Math.sqrt((landmark1.x - landmark2.x)**2 + (landmark1.y - landmark2.y)**2 + (landmark1.z - landmark2.z)**2)
+    return Math.sqrt((landmark1.x - landmark2.x) ** 2 + (landmark1.y - landmark2.y) ** 2 + (landmark1.z - landmark2.z) ** 2)
   }
-  
+
   const isFingerExtended = (tip: number, pip: number, mcp: number): boolean => {
     return landmarks[tip].y < landmarks[pip].y && landmarks[pip].y < landmarks[mcp].y
   }
-  
+
   const isFingerCurled = (tip: number, pip: number): boolean => {
     return landmarks[tip].y > landmarks[pip].y
   }
-  
+
   const isThumbExtended = (): boolean => {
-    return landmarks[THUMB_TIP].x > landmarks[THUMB_IP].x && 
-           Math.abs(landmarks[THUMB_TIP].y - landmarks[THUMB_IP].y) < 0.05
+    return landmarks[THUMB_TIP].x > landmarks[THUMB_IP].x &&
+      Math.abs(landmarks[THUMB_TIP].y - landmarks[THUMB_IP].y) < 0.05
   }
-  
+
   const isThumbTucked = (): boolean => {
     return distance(THUMB_TIP, INDEX_MCP) < 0.08
   }
-  
+
   const fingersCurledIntoFist = (): boolean => {
     return isFingerCurled(INDEX_TIP, INDEX_PIP) &&
-           isFingerCurled(MIDDLE_TIP, MIDDLE_PIP) &&
-           isFingerCurled(RING_TIP, RING_PIP) &&
-           isFingerCurled(PINKY_TIP, PINKY_PIP)
+      isFingerCurled(MIDDLE_TIP, MIDDLE_PIP) &&
+      isFingerCurled(RING_TIP, RING_PIP) &&
+      isFingerCurled(PINKY_TIP, PINKY_PIP)
   }
-  
+
   // Check finger extension states
   const thumbExtended = isThumbExtended()
   const indexExtended = isFingerExtended(INDEX_TIP, INDEX_PIP, INDEX_MCP)
   const middleExtended = isFingerExtended(MIDDLE_TIP, MIDDLE_PIP, MIDDLE_MCP)
   const ringExtended = isFingerExtended(RING_TIP, RING_PIP, RING_MCP)
   const pinkyExtended = isFingerExtended(PINKY_TIP, PINKY_PIP, PINKY_MCP)
-  
+
   // ASL Letter Recognition - Based on actual reference image positions
-  
+
   // A: Closed fist with thumb alongside (tucked against index finger)
   if (fingersCurledIntoFist() && isThumbTucked()) {
     return "a"
   }
-  
+
   // B: All four fingers extended straight up, thumb tucked across palm
   if (indexExtended && middleExtended && ringExtended && pinkyExtended && isThumbTucked()) {
     // Verify fingers are close together and straight
     const fingersClose = distance(INDEX_TIP, MIDDLE_TIP) < 0.05 &&
-                        distance(MIDDLE_TIP, RING_TIP) < 0.05 &&
-                        distance(RING_TIP, PINKY_TIP) < 0.05
+      distance(MIDDLE_TIP, RING_TIP) < 0.05 &&
+      distance(RING_TIP, PINKY_TIP) < 0.05
     if (fingersClose) {
       return "b"
     }
   }
-  
+
   // C: Curved fingers forming C shape (all fingers partially curled)
   if (!indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
     // Check if fingers are in curved position (not fully closed)
     const fingersCurved = landmarks[INDEX_TIP].y > landmarks[INDEX_MCP].y &&
-                         landmarks[MIDDLE_TIP].y > landmarks[MIDDLE_MCP].y &&
-                         landmarks[RING_TIP].y > landmarks[RING_MCP].y &&
-                         landmarks[PINKY_TIP].y > landmarks[PINKY_MCP].y &&
-                         landmarks[INDEX_TIP].y < landmarks[INDEX_PIP].y + 0.02 // Not fully closed
+      landmarks[MIDDLE_TIP].y > landmarks[MIDDLE_MCP].y &&
+      landmarks[RING_TIP].y > landmarks[RING_MCP].y &&
+      landmarks[PINKY_TIP].y > landmarks[PINKY_MCP].y &&
+      landmarks[INDEX_TIP].y < landmarks[INDEX_PIP].y + 0.02 // Not fully closed
     if (fingersCurved) {
       return "c"
     }
   }
-  
+
   // D: Index finger up, other fingers curled, thumb touches middle finger
   if (indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
     const thumbTouchesMiddle = distance(THUMB_TIP, MIDDLE_TIP) < 0.06
@@ -92,19 +92,19 @@ function recognizeASLLetter(landmarks: { x: number; y: number; z: number }[]): s
       return "d"
     }
   }
-  
+
   // E: All fingertips curl down to touch palm, thumb curled over
   if (fingersCurledIntoFist()) {
     // Check if fingertips are really curled down (different from A)
     const fingertipsDown = landmarks[INDEX_TIP].y > landmarks[INDEX_DIP].y &&
-                          landmarks[MIDDLE_TIP].y > landmarks[MIDDLE_DIP].y &&
-                          landmarks[RING_TIP].y > landmarks[RING_DIP].y &&
-                          landmarks[PINKY_TIP].y > landmarks[PINKY_DIP].y
+      landmarks[MIDDLE_TIP].y > landmarks[MIDDLE_DIP].y &&
+      landmarks[RING_TIP].y > landmarks[RING_DIP].y &&
+      landmarks[PINKY_TIP].y > landmarks[PINKY_DIP].y
     if (fingertipsDown) {
       return "e"
     }
   }
-  
+
   // F: Index finger and thumb form circle, other fingers extended
   if (middleExtended && ringExtended && pinkyExtended && !indexExtended) {
     const thumbIndexCircle = distance(THUMB_TIP, INDEX_TIP) < 0.05
@@ -112,35 +112,35 @@ function recognizeASLLetter(landmarks: { x: number; y: number; z: number }[]): s
       return "f"
     }
   }
-  
+
   // G: Index finger and thumb extended horizontally, pointing same direction
   if (thumbExtended && indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
     // Check if both pointing horizontally in same direction
     const bothHorizontal = Math.abs(landmarks[THUMB_TIP].y - landmarks[THUMB_MCP].y) < 0.03 &&
-                          Math.abs(landmarks[INDEX_TIP].y - landmarks[INDEX_MCP].y) < 0.03
-    const sameDirection = (landmarks[THUMB_TIP].x - landmarks[THUMB_MCP].x) * 
-                         (landmarks[INDEX_TIP].x - landmarks[INDEX_MCP].x) > 0
+      Math.abs(landmarks[INDEX_TIP].y - landmarks[INDEX_MCP].y) < 0.03
+    const sameDirection = (landmarks[THUMB_TIP].x - landmarks[THUMB_MCP].x) *
+      (landmarks[INDEX_TIP].x - landmarks[INDEX_MCP].x) > 0
     if (bothHorizontal && sameDirection) {
       return "g"
     }
   }
-  
+
   // H: Index and middle fingers extended horizontally (side by side)
   if (!thumbExtended && indexExtended && middleExtended && !ringExtended && !pinkyExtended) {
     // Check if fingers are horizontal and close together
     const bothHorizontal = Math.abs(landmarks[INDEX_TIP].y - landmarks[INDEX_MCP].y) < 0.03 &&
-                          Math.abs(landmarks[MIDDLE_TIP].y - landmarks[MIDDLE_MCP].y) < 0.03
+      Math.abs(landmarks[MIDDLE_TIP].y - landmarks[MIDDLE_MCP].y) < 0.03
     const fingersClose = distance(INDEX_TIP, MIDDLE_TIP) < 0.04
     if (bothHorizontal && fingersClose) {
       return "h"
     }
   }
-  
+
   // I: Pinky extended up, other fingers curled, thumb tucked
   if (pinkyExtended && !indexExtended && !middleExtended && !ringExtended && isThumbTucked()) {
     return "i"
   }
-  
+
   // J: Pinky extended with J motion (we'll detect static position)
   if (pinkyExtended && !indexExtended && !middleExtended && !ringExtended) {
     // J is similar to I but with a hooking motion - detect the curved pinky
@@ -149,97 +149,101 @@ function recognizeASLLetter(landmarks: { x: number; y: number; z: number }[]): s
       return "j"
     }
   }
-  
+
   // K: Index and middle up, thumb touches middle finger between joints
   if (indexExtended && middleExtended && !ringExtended && !pinkyExtended) {
     // Thumb should be positioned between index and middle, touching middle finger
     const thumbTouchesMiddle = distance(THUMB_TIP, MIDDLE_PIP) < 0.06
     const thumbBetweenFingers = landmarks[THUMB_TIP].x > Math.min(landmarks[INDEX_TIP].x, landmarks[MIDDLE_TIP].x) &&
-                               landmarks[THUMB_TIP].x < Math.max(landmarks[INDEX_TIP].x, landmarks[MIDDLE_TIP].x)
+      landmarks[THUMB_TIP].x < Math.max(landmarks[INDEX_TIP].x, landmarks[MIDDLE_TIP].x)
     if (thumbTouchesMiddle && thumbBetweenFingers) {
       return "k"
     }
   }
-  
+
   // L: Thumb and index form L shape (perpendicular)
   if (thumbExtended && indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
     // Check angle between thumb and index
-    const thumbDir = { x: landmarks[THUMB_TIP].x - landmarks[THUMB_MCP].x, 
-                      y: landmarks[THUMB_TIP].y - landmarks[THUMB_MCP].y }
-    const indexDir = { x: landmarks[INDEX_TIP].x - landmarks[INDEX_MCP].x, 
-                      y: landmarks[INDEX_TIP].y - landmarks[INDEX_MCP].y }
+    const thumbDir = {
+      x: landmarks[THUMB_TIP].x - landmarks[THUMB_MCP].x,
+      y: landmarks[THUMB_TIP].y - landmarks[THUMB_MCP].y
+    }
+    const indexDir = {
+      x: landmarks[INDEX_TIP].x - landmarks[INDEX_MCP].x,
+      y: landmarks[INDEX_TIP].y - landmarks[INDEX_MCP].y
+    }
     const dotProduct = thumbDir.x * indexDir.x + thumbDir.y * indexDir.y
-    const angle = Math.abs(dotProduct) / (Math.sqrt(thumbDir.x**2 + thumbDir.y**2) * 
-                                         Math.sqrt(indexDir.x**2 + indexDir.y**2))
-    
+    const angle = Math.abs(dotProduct) / (Math.sqrt(thumbDir.x ** 2 + thumbDir.y ** 2) *
+      Math.sqrt(indexDir.x ** 2 + indexDir.y ** 2))
+
     // L shape should be roughly perpendicular (angle near 0)
     if (angle < 0.3) {
       return "l"
     }
   }
-  
+
   // M: Fist with thumb under first three fingers
   if (fingersCurledIntoFist()) {
     // Thumb should be under/behind the first three fingers
     const thumbUnder = landmarks[THUMB_TIP].y > landmarks[INDEX_MCP].y &&
-                      distance(THUMB_TIP, INDEX_MCP) < 0.08
+      distance(THUMB_TIP, INDEX_MCP) < 0.08
     if (thumbUnder) {
       return "m"
     }
   }
-  
+
   // N: Similar to M but thumb under only first two fingers
   if (fingersCurledIntoFist()) {
     // Thumb under index and middle, but ring and pinky may be slightly different
     const thumbUnderTwo = landmarks[THUMB_TIP].y > landmarks[INDEX_MCP].y &&
-                         landmarks[THUMB_TIP].y > landmarks[MIDDLE_MCP].y &&
-                         distance(THUMB_TIP, MIDDLE_MCP) < 0.08
+      landmarks[THUMB_TIP].y > landmarks[MIDDLE_MCP].y &&
+      distance(THUMB_TIP, MIDDLE_MCP) < 0.08
     if (thumbUnderTwo) {
       return "n"
     }
   }
-  
+
   // O: Fingers curved to form O shape (similar to C but more closed)
   if (!indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
     // More closed than C - fingertips should be closer to thumb
     const formingO = distance(THUMB_TIP, INDEX_TIP) < 0.06 &&
-                    distance(THUMB_TIP, MIDDLE_TIP) < 0.08
+      distance(THUMB_TIP, MIDDLE_TIP) < 0.08
     if (formingO) {
       return "o"
     }
   }
-  
+
   // P: Like K but pointing downward
   if (indexExtended && middleExtended && !ringExtended && !pinkyExtended) {
     // Similar to K but pointing down
     const pointingDown = landmarks[INDEX_TIP].y > landmarks[INDEX_MCP].y &&
-                        landmarks[MIDDLE_TIP].y > landmarks[MIDDLE_MCP].y
+      landmarks[MIDDLE_TIP].y > landmarks[MIDDLE_MCP].y
     const thumbTouchesMiddle = distance(THUMB_TIP, MIDDLE_PIP) < 0.06
     if (pointingDown && thumbTouchesMiddle) {
       return "p"
     }
   }
-  
+
   // Q: Like G but pointing downward
   if (thumbExtended && indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
     // Similar to G but pointing down
     const pointingDown = landmarks[INDEX_TIP].y > landmarks[INDEX_MCP].y &&
-                        landmarks[THUMB_TIP].y > landmarks[THUMB_MCP].y
+      landmarks[THUMB_TIP].y > landmarks[THUMB_MCP].y
     if (pointingDown) {
       return "q"
     }
   }
-  
+
   // R: Index and middle fingers crossed
   if (indexExtended && middleExtended && !ringExtended && !pinkyExtended && isThumbTucked()) {
     // Check if fingers are crossed
     const fingersCrossed = Math.abs(landmarks[INDEX_TIP].x - landmarks[MIDDLE_TIP].x) < 0.03 &&
-                          Math.abs(landmarks[INDEX_PIP].x - landmarks[MIDDLE_PIP].x) > 0.02
+      Math.abs(landmarks[INDEX_PIP].x - landmarks[MIDDLE_PIP].x) > 0.02
     if (fingersCrossed) {
       return "r"
     }
   }
-  
+
   // S: Closed fist with thumb over fingers
   if (fingersCurledIntoFist()) {
     // Thumb should be over the fingers, not tucked
@@ -248,18 +252,18 @@ function recognizeASLLetter(landmarks: { x: number; y: number; z: number }[]): s
       return "s"
     }
   }
-  
+
   // T: Thumb between index and middle finger (index curled over thumb)
   if (!indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
     // Thumb should be visible between curled fingers
     const thumbVisible = landmarks[THUMB_TIP].y < landmarks[INDEX_PIP].y &&
-                        landmarks[THUMB_TIP].x > landmarks[INDEX_TIP].x &&
-                        landmarks[THUMB_TIP].x < landmarks[MIDDLE_TIP].x
+      landmarks[THUMB_TIP].x > landmarks[INDEX_TIP].x &&
+      landmarks[THUMB_TIP].x < landmarks[MIDDLE_TIP].x
     if (thumbVisible) {
       return "t"
     }
   }
-  
+
   // U: Index and middle fingers up together (like V but touching)
   if (!thumbExtended && indexExtended && middleExtended && !ringExtended && !pinkyExtended) {
     // Fingers should be very close together
@@ -268,7 +272,7 @@ function recognizeASLLetter(landmarks: { x: number; y: number; z: number }[]): s
       return "u"
     }
   }
-  
+
   // V: Index and middle fingers up in V shape (separated)
   if (!thumbExtended && indexExtended && middleExtended && !ringExtended && !pinkyExtended) {
     // Fingers should be separated
@@ -277,33 +281,33 @@ function recognizeASLLetter(landmarks: { x: number; y: number; z: number }[]): s
       return "v"
     }
   }
-  
+
   // W: Index, middle, and ring fingers up
   if (!thumbExtended && indexExtended && middleExtended && ringExtended && !pinkyExtended) {
     return "w"
   }
-  
+
   // X: Index finger crooked/bent at PIP joint
   if (!thumbExtended && !middleExtended && !ringExtended && !pinkyExtended) {
     // Index finger should be crooked (bent at PIP)
     const indexCrooked = landmarks[INDEX_TIP].y > landmarks[INDEX_PIP].y &&
-                        landmarks[INDEX_PIP].y < landmarks[INDEX_MCP].y
+      landmarks[INDEX_PIP].y < landmarks[INDEX_MCP].y
     if (indexCrooked) {
       return "x"
     }
   }
-  
+
   // Y: Thumb and pinky extended ("hang loose" gesture)
   if (thumbExtended && !indexExtended && !middleExtended && !ringExtended && pinkyExtended) {
     return "y"
   }
-  
+
   // Z: Index finger extended, draw Z motion (we'll detect the pointing position)
   if (!thumbExtended && indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
     // Z is typically drawn with index finger - detect pointing gesture
     return "z"
   }
-  
+
   return null // No letter recognized
 }
 
@@ -387,12 +391,12 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
 
     setLoading(true)
     setError(null)
-    
+
     // Suppress TensorFlow messages during model loading too
     const originalError = console.error
     const originalInfo = console.info
     const originalLog = console.log
-    
+
     console.error = (...args) => {
       const message = args.join(' ')
       if (message.includes('TensorFlow') || message.includes('MediaPipe') || message.includes('XNNPACK')) {
@@ -400,7 +404,7 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
       }
       originalError(...args)
     }
-    
+
     console.info = (...args) => {
       const message = args.join(' ')
       if (message.includes('TensorFlow') || message.includes('MediaPipe')) {
@@ -408,7 +412,7 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
       }
       originalInfo(...args)
     }
-    
+
     console.log = (...args) => {
       const message = args.join(' ')
       if (message.includes('TensorFlow') || message.includes('MediaPipe')) {
@@ -416,10 +420,10 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
       }
       originalLog(...args)
     }
-    
+
     try {
       originalLog("Loading MediaPipe model...")
-      
+
       // Try multiple CDN sources for better reliability
       const visionSources = [
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm",
@@ -427,10 +431,10 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
         "https://unpkg.com/@mediapipe/tasks-vision@0.10.3/wasm",
         "/wasm" // Local fallback
       ];
-      
+
       let vision = null;
       let lastError = null;
-      
+
       for (const source of visionSources) {
         try {
           console.log(`Trying to load vision from: ${source}`);
@@ -445,11 +449,11 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
           continue;
         }
       }
-      
+
       if (!vision) {
         throw lastError || new Error('Failed to load MediaPipe vision tasks from any source');
       }
-      
+
       visionRef.current = vision
 
       // Try multiple model sources for hand landmarker
@@ -458,9 +462,9 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
         "/models/hand_landmarker.task",
         "./hand_landmarker.task"
       ];
-      
+
       let recognizer = null;
-      
+
       for (const modelPath of modelSources) {
         try {
           console.log(`Trying to load hand landmarker model from: ${modelPath}`);
@@ -483,18 +487,18 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
           continue;
         }
       }
-      
+
       if (!recognizer) {
         throw new Error('Failed to load hand landmarker model from any source');
       }
-      
+
       recognizerRef.current = recognizer
-      
+
       // Restore console methods
       console.error = originalError
-      console.info = originalInfo 
+      console.info = originalInfo
       console.log = originalLog
-      
+
       console.log("MediaPipe model loaded successfully")
       console.log("TensorFlow will initialize silently on first use")
       setLoading(false)
@@ -503,11 +507,11 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
       console.error = originalError
       console.info = originalInfo
       console.log = originalLog
-      
+
       console.error("Failed to load gesture model:", error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       let friendlyError = "Failed to load gesture model. ";
-      
+
       if (errorMessage.includes('fetch')) {
         friendlyError += "Please check your internet connection.";
       } else if (errorMessage.includes('CORS')) {
@@ -517,7 +521,7 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
       } else {
         friendlyError += "This feature requires an internet connection and a compatible browser.";
       }
-      
+
       setError(friendlyError)
       setLoading(false)
       throw error
@@ -543,32 +547,32 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
       if (videoRef.current) {
         const videoEl = videoRef.current
         videoEl.srcObject = stream
-        
+
         // Wait for video metadata to load with timeout
         await new Promise<void>((resolve, reject) => {
           const timeout = setTimeout(() => {
             cleanup()
             reject(new Error("Video loading timeout - please check your camera"))
           }, 10000) // 10 second timeout
-          
+
           const handleLoadedMetadata = () => {
             console.log('Video metadata loaded');
             cleanup()
             resolve()
           }
-          
+
           const handleCanPlay = () => {
             console.log('Video can play');
-            cleanup() 
+            cleanup()
             resolve()
           }
-          
+
           const handleError = (e: Event) => {
             console.error('Video error:', e);
             cleanup()
             reject(new Error("Video failed to load - camera may be in use"))
           }
-          
+
           const cleanup = () => {
             clearTimeout(timeout)
             videoEl.removeEventListener("loadedmetadata", handleLoadedMetadata)
@@ -579,7 +583,7 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
           videoEl.addEventListener("loadedmetadata", handleLoadedMetadata)
           videoEl.addEventListener("canplay", handleCanPlay)
           videoEl.addEventListener("error", handleError)
-          
+
           // Start playing (don't await this as it may be interrupted)
           videoEl.play().catch((playError) => {
             console.warn('Initial play failed, will retry later:', playError);
@@ -595,7 +599,7 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
     } catch (error) {
       console.error('Error accessing camera:', error)
       let errorMessage = "Camera access failed. Please check your camera and try again.";
-      
+
       if (error instanceof Error) {
         switch (error.name) {
           case "NotAllowedError":
@@ -620,7 +624,7 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
             break;
         }
       }
-      
+
       setError(errorMessage)
       setCameraReady(false)
       throw error
@@ -635,7 +639,7 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
     if (videoRef.current) {
       try {
         videoRef.current.pause()
-      } catch {}
+      } catch { }
       videoRef.current.srcObject = null
     }
     setCameraReady(false)
@@ -668,19 +672,19 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
       const originalWarn = console.warn
       const originalInfo = console.info
       const originalLog = console.log
-      
+
       // Override all console methods to suppress TensorFlow messages
       console.error = (...args) => {
         const message = args.join(' ')
-        if (message.includes('INFO: Created TensorFlow') || 
-            message.includes('XNNPACK delegate') ||
-            message.includes('TensorFlow Lite') ||
-            message.includes('MediaPipe')) {
+        if (message.includes('INFO: Created TensorFlow') ||
+          message.includes('XNNPACK delegate') ||
+          message.includes('TensorFlow Lite') ||
+          message.includes('MediaPipe')) {
           return // Completely suppress
         }
         originalError(...args)
       }
-      
+
       console.warn = (...args) => {
         const message = args.join(' ')
         if (message.includes('TensorFlow') || message.includes('MediaPipe')) {
@@ -688,7 +692,7 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
         }
         originalWarn(...args)
       }
-      
+
       console.info = (...args) => {
         const message = args.join(' ')
         if (message.includes('TensorFlow') || message.includes('MediaPipe')) {
@@ -696,7 +700,7 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
         }
         originalInfo(...args)
       }
-      
+
       console.log = (...args) => {
         const message = args.join(' ')
         if (message.includes('TensorFlow') || message.includes('MediaPipe') || message.includes('XNNPACK')) {
@@ -707,13 +711,13 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
 
       try {
         result = recognizer.detectForVideo(videoEl, nowMs)
-        
+
         // Restore all console methods
         console.error = originalError
         console.warn = originalWarn
         console.info = originalInfo
         console.log = originalLog
-        
+
         // If we get here successfully, AI is fully initialized
         if (initStartTimeRef.current > 0) {
           const initTime = Date.now() - initStartTimeRef.current
@@ -721,20 +725,20 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
           initStartTimeRef.current = 0
         }
         setAiInitializing(false)
-        
+
       } catch (error) {
         // Restore all console methods
         console.error = originalError
         console.warn = originalWarn
         console.info = originalInfo
         console.log = originalLog
-        
+
         // During initialization, MediaPipe may throw while TensorFlow is loading
         if (initStartTimeRef.current === 0) {
           initStartTimeRef.current = Date.now()
           originalLog('🤖 AI initializing...')
         }
-        
+
         setAiInitializing(true)
         // Silently handle initialization - no error logging
       }
@@ -742,7 +746,7 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
       if (result?.landmarks?.length) {
         const landmarks = result.landmarks[0] // Use first hand
         const recognizedLetter = recognizeASLLetter(landmarks)
-        
+
         if (recognizedLetter) {
           if (lastGestureRef.current === recognizedLetter) {
             sameCountRef.current += 1
@@ -786,14 +790,14 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
         console.log(`Waiting for video element... attempt ${elementAttempts + 1}/${maxElementAttempts}`);
         await new Promise(resolve => setTimeout(resolve, 500))
         elementAttempts++
-        
+
         // Give the dialog more time to fully render
         if (elementAttempts === 5) {
           console.log('Giving dialog extra time to render...')
           await new Promise(resolve => setTimeout(resolve, 2000))
         }
       }
-      
+
       if (!videoRef.current) {
         throw new Error("Video element not available after extended waiting. Please close and reopen the dialog.")
       }
@@ -819,14 +823,14 @@ export function useSignLanguage(options: UseSignLanguageOptions) {
         throw new Error("Camera stream not active")
       }
 
-        // Wait for video to be fully loaded with multiple attempts
-        let loadAttempts = 0
-        const maxLoadAttempts = 10
-        while (videoEl.readyState < 2 && loadAttempts < maxLoadAttempts) {
-          console.log(`Waiting for video to load... attempt ${loadAttempts + 1}/${maxLoadAttempts}`);
-          await new Promise((resolve) => setTimeout(resolve, 500))
-          loadAttempts++
-        }
+      // Wait for video to be fully loaded with multiple attempts
+      let loadAttempts = 0
+      const maxLoadAttempts = 10
+      while (videoEl.readyState < 2 && loadAttempts < maxLoadAttempts) {
+        console.log(`Waiting for video to load... attempt ${loadAttempts + 1}/${maxLoadAttempts}`);
+        await new Promise((resolve) => setTimeout(resolve, 500))
+        loadAttempts++
+      }
 
       if (videoEl.readyState < 2) {
         throw new Error("Video not loaded after multiple attempts. Please check your camera connection.")
