@@ -1,6 +1,27 @@
 "use server";
 
 import { db, type Prisma } from "@/utils/prisma";
+import { QueueClient } from "@azure/storage-queue";
+
+const QUEUE_NAME = process.env.VIDEO_QUEUE_NAME || "videos";
+const QUEUE_CONNECTION_STRING = process.env.AZURE_QUEUE_CONNECTION_STRING;
+
+export async function requeueVideo(id: string) {
+  if (!QUEUE_CONNECTION_STRING) {
+    console.error("AZURE_QUEUE_CONNECTION_STRING is not set.");
+    throw new Error("Queue connection string not configured.");
+  }
+
+  try {
+    const queueClient = new QueueClient(QUEUE_CONNECTION_STRING, QUEUE_NAME);
+    await queueClient.createIfNotExists();
+    await queueClient.sendMessage(id);
+    console.log(`Video ${id} re-queued for processing.`);
+  } catch (error) {
+    console.error(`Failed to re-queue video ${id}:`, error);
+    throw new Error("Failed to re-queue video.");
+  }
+}
 
 export async function getVideos() {
   return await db.video.findMany({

@@ -40,11 +40,24 @@ export async function saveResultToDb(videoId: string, poseSequenceJsonUrl: strin
   try {
     const res = await client.query(query, [videoId, poseSequenceJsonUrl]);
     if (res.rowCount === 0) {
-      // optionally INSERT instead of update
-      await client.query(
-        `INSERT INTO "Video" (id, "signTimeUrl") VALUES ($1,$2)`,
-        [videoId, poseSequenceJsonUrl]
-      );
+      throw new Error(`Video with id ${videoId} not found for update`);
+    }
+  } finally {
+    client.release();
+  }
+}
+
+export async function updateVideoPublishedStatus(videoId: string, status: boolean): Promise<void> {
+  const query = `
+    UPDATE "Video"
+    SET "isPublished" = $2
+    WHERE id = $1
+  `;
+  const client = await pool.connect();
+  try {
+    const res = await client.query(query, [videoId, status]);
+    if (res.rowCount === 0) {
+      throw new Error(`Video with id ${videoId} not found for status update`);
     }
   } finally {
     client.release();

@@ -20,6 +20,7 @@ type meta = {
   videoUrl?: string;
   thumbnailUrl?: string;
   uploaderId?: string;
+  duration?: number;
 };
 
 type UploadVideoInput = {

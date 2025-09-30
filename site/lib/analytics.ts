@@ -8,6 +8,9 @@ import { getSubscribersCount, getUserByEmail } from "@/utils/user";
 export default async function getUserAnalytics() {
     try {
         const session = await getServerSession();
+        if (!session?.user?.email) {
+            throw new Error("Unauthorized: User email not found in session.");
+        }
         const user = await getUserByEmail(session.user.email);
         if (!user?.id) {
             throw new Error("Unauthorized");

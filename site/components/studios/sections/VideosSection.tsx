@@ -9,7 +9,7 @@ import {
     Video,
 } from "lucide-react";
 import deleteVideoById from "@/lib/deleteVideo";
-import { getVideosByUser } from "@/utils/video";
+import { getVideosByUser, requeueVideo, updateVideo } from "@/utils/video";
 import { useSession } from "next-auth/react";
 import { toast, Toaster } from "sonner";
 import { cn } from "@/lib/utils";
@@ -33,6 +33,7 @@ export type UploadedVideo = {
     category: string | null;
     uploaderId: string;
     uploader: User;
+    isPublished: boolean;
     _count: {
         likesList: number;
     };
@@ -47,6 +48,7 @@ export default function VideosSection() {
     const [isLoading, setIsLoading] = useState(true);
     const [hasMore, setHasMore] = useState(true);
     const [page, setPage] = useState(1);
+    const [filterStatus, setFilterStatus] = useState<"published" | "draft">("published");
 
     const handleDelete = async (id: string) => {
         if (!session?.user?.id) {
@@ -70,13 +72,13 @@ export default function VideosSection() {
         loadVideos(1);
 
         return () => clearTimeout(timer);
-    }, [session?.user?.id]);
+    }, [session?.user?.id, filterStatus]);
 
     const loadVideos = async (pageNum: number) => {
         if (!session?.user?.id) return;
         setIsLoading(true);
         try {
-            const newVideos = await getVideosByUser(session.user.id, BATCH_SIZE, (pageNum - 1) * BATCH_SIZE);
+            const newVideos = await getVideosByUser(session.user.id, BATCH_SIZE, (pageNum - 1) * BATCH_SIZE, filterStatus === "published");
             if (pageNum === 1) {
                 setVideos(newVideos);
             } else {
@@ -95,6 +97,28 @@ export default function VideosSection() {
         const nextPage = page + 1;
         setPage(nextPage);
         loadVideos(nextPage);
+    };
+
+    const handlePublish = async (id: string) => {
+        try {
+            // Call API to update isPublished status
+            await updateVideo(id, { isPublished: true });
+            toast.success("Video published successfully!");
+            loadVideos(1); // Reload videos to reflect changes
+        } catch (error) {
+            toast.error("Failed to publish video. Please try again.");
+        }
+    };
+
+    const handleRetry = async (id: string) => {
+        try {
+            // Call API to re-queue video for processing
+            await requeueVideo(id);
+            toast.success("Video re-queued for processing!");
+            loadVideos(1); // Reload videos to reflect changes
+        } catch (error) {
+            toast.error("Failed to re-queue video. Please try again.");
+        }
     };
 
     if (videos.length === 0 && !isLoading) {
@@ -118,6 +142,20 @@ export default function VideosSection() {
             <div className="flex items-center flex-col md:flex-row md:justify-between mb-8">
                 <h1 className="text-3xl font-bold">My Content</h1>
                 <div className="flex items-center gap-2">
+                    <Button
+                        variant={filterStatus === "published" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setFilterStatus("published")}
+                    >
+                        Published
+                    </Button>
+                    <Button
+                        variant={filterStatus === "draft" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setFilterStatus("draft")}
+                    >
+                        Drafts
+                    </Button>
                     <Button
                         variant={layout === "list" ? "default" : "outline"}
                         size="icon"
@@ -154,9 +192,9 @@ export default function VideosSection() {
                     >
                         {videos.map((video) =>
                             layout === "grid" ? (
-                                <GridViewCard key={video.id} video={video} onDelete={handleDelete} />
+                                <GridViewCard key={video.id} video={video} onDelete={handleDelete} onPublish={handlePublish} onRetry={handleRetry} />
                             ) : (
-                                <ListViewCard key={video.id} video={video} onDelete={handleDelete} />
+                                <ListViewCard key={video.id} video={video} onDelete={handleDelete} onPublish={handlePublish} onRetry={handleRetry} />
                             )
                         )}
                     </div>

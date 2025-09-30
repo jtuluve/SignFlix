@@ -26,6 +26,8 @@ model User {
   avatarUrl        String?
   role             Role     @default(USER)
   bio              String?
+  description      String?
+  bannerUrl        String?
   subscribersCount Int      @default(0)
   createdAt        DateTime @default(now())
 
@@ -50,6 +52,7 @@ model Video {
   likes        Int      @default(0)
   tags         String[]
   category     String?
+  isPublished  Boolean @default(false)
   createdAt    DateTime @default(now())
 
   uploaderId String

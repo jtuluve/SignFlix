@@ -11,6 +11,7 @@ import { Toaster, toast } from 'sonner';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import uploadBanner from "@/lib/uploadBanner";
 
 export default function ProfileSection() {
     const { data: session, update } = useSession();
@@ -18,6 +19,10 @@ export default function ProfileSection() {
     const [username, setUsername] = useState(session?.user?.username || "");
     const [email, setEmail] = useState(session?.user?.email || "");
     const [bio, setBio] = useState((session?.user as any)?.bio || "No Bio");
+    const [description, setDescription] = useState((session?.user as any)?.description || "");
+    const [bannerFile, setBannerFile] = useState<File | null>(null);
+    const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+    const [bannerUrl, setBannerUrl] = useState((session?.user as any)?.bannerUrl || "");
     const [isEditing, setIsEditing] = useState(false);
     const [subscribers, setSubscribers] = useState(0);
 
@@ -26,14 +31,32 @@ export default function ProfileSection() {
             const user = await getUserByEmail(session.user.email);
             setUsername(user?.username || "");
             setBio(user?.bio || "No Bio");
+            setDescription(user?.description || "");
+            setBannerUrl(user?.bannerUrl || "");
             setSubscribers(user?.subscribersCount || 0);
         })()
     }, [session]);
 
+    useEffect(() => {
+        if (bannerFile) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setBannerPreview(reader.result as string);
+            };
+            reader.readAsDataURL(bannerFile);
+        } else {
+            setBannerPreview(null);
+        }
+    }, [bannerFile]);
+
     const handleSave = async () => {
         try {
-            await updateUserProfile({ username, bio });
-            await update({ ...session, user: { ...session?.user, username, bio } });
+            let newBannerUrl = bannerUrl;
+            if (bannerFile) {
+                newBannerUrl = await uploadBanner(bannerFile);
+            }
+            await updateUserProfile({ username, bio, description, bannerUrl: newBannerUrl });
+            await update({ ...session, user: { ...session?.user, username, bio, description, bannerUrl: newBannerUrl } });
             toast.success("Profile saved");
             setIsEditing(false);
         } catch (error) {
@@ -100,6 +123,34 @@ export default function ProfileSection() {
                                 placeholder="Tell viewers about yourself"
                                 disabled={!isEditing}
                             />
+                        </div>
+
+                        <div>
+                            <Label htmlFor="description">Channel Description</Label>
+                            <Textarea
+                                id="description"
+                                rows={5}
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                placeholder="Describe your channel to viewers"
+                                disabled={!isEditing}
+                            />
+                        </div>
+
+                        <div>
+                            <Label htmlFor="banner">Channel Banner</Label>
+                            <Input
+                                id="banner"
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => setBannerFile(e.target.files?.[0] ?? null)}
+                                disabled={!isEditing}
+                            />
+                            {(bannerPreview || bannerUrl) && (
+                                <div className="mt-2 relative w-full h-32 rounded-md overflow-hidden">
+                                    <img src={bannerPreview || bannerUrl} alt="Banner preview" className="object-cover w-full h-full" />
+                                </div>
+                            )}
                         </div>
                     </div>
                 </CardContent>

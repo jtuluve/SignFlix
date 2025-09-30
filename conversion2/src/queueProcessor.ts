@@ -54,7 +54,8 @@ async function processSingleVideo(videoId: string): Promise<void> {
 
     // 6. Save to DB
     await saveResultToDb(videoId, jsonUrl);
-    console.log(`[${videoId}] Saved result to DB.`);
+    await updateVideoPublishedStatus(videoId, true);
+    console.log(`[${videoId}] Saved result to DB and marked as published.`);
 
     console.log(`Finished processing videoId: ${videoId}`);
   } catch (err) {

@@ -5,8 +5,9 @@ import ChannelPage from '@/components/channel/ChannelPage';
 import { notFound } from 'next/navigation';
 
 export default async function Page({ params }: { params: { id: string } }) {
-  const channel = await getUser(params.id);
-  const videos = await getVideosByUser(params.id);
+  const param = await params;
+  const channel = await getUser(param.id);
+  const videos = await getVideosByUser(param.id);
 
   if (!channel) {
     notFound();

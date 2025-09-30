@@ -28,6 +28,7 @@ export default function UploadSection() {
     description: "",
     tags: "",
     category: "",
+    duration: 0, // Add duration to metadata state
   });
 
   useEffect(() => {
@@ -43,8 +44,23 @@ export default function UploadSection() {
         });
       }, 500);
       return () => clearInterval(interval);
-    }
+          }
   }, [videoFile]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const file = e.target.files[0];
+      setVideoFile(file);
+      toast.success("Video selected! Please fill in the details below.");
+
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.onloadedmetadata = () => {
+        setMetadata((prev) => ({ ...prev, duration: Math.round(video.duration) }));
+      };
+      video.src = URL.createObjectURL(file);
+    }
+  };
 
   useEffect(() => {
     if (thumbnailFile) {
@@ -74,16 +90,17 @@ export default function UploadSection() {
       if (file.type.startsWith("video/")) {
         setVideoFile(file);
         toast.success("Video selected! Please fill in the details below.");
+
+        // Extract video duration
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.onloadedmetadata = () => {
+          setMetadata((prev) => ({ ...prev, duration: Math.round(video.duration) }));
+        };
+        video.src = URL.createObjectURL(file);
       } else {
         toast.warning("Invalid file type. Please drop a video file.");
       }
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setVideoFile(e.target.files[0]);
-      toast.success("Video selected! Please fill in the details below.");
     }
   };
 
@@ -120,7 +137,7 @@ export default function UploadSection() {
     setVideoFile(null);
     setThumbnailFile(null);
     setCaptionFile(null);
-    setMetadata({ title: "", description: "", tags: "", category: "" });
+    setMetadata({ title: "", description: "", tags: "", category: "", duration: 0 });
     setUploadProgress(0);
     setThumbnailPreview(null);
   };

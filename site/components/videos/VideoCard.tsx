@@ -2,12 +2,20 @@ import Link from "next/link";
 import Image from "next/image";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { type Video, type User } from "@prisma/client";
+import { useRouter } from "next/navigation";
 
 type VideoWithUploader = Video & { uploader: User };
 
 export default function VideoCard({ video }: { video: VideoWithUploader }) {
+  const router = useRouter();
+
+  const handleChannelClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    router.push(`/channel/${video.uploader.id}`);
+  };
+
   return (
-    <Link href={`/watch/${video.id}`} className="group">
+    <div className="group">
       <div className="space-y-3">
         <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
           <Image
@@ -21,24 +29,24 @@ export default function VideoCard({ video }: { video: VideoWithUploader }) {
           </div>
         </div>
         <div className="flex items-start gap-3">
-          <Link href={`/channel/${video.uploader.id}`} onClick={(e) => e.stopPropagation()}>
+          <div onClick={handleChannelClick} className="cursor-pointer">
             <Avatar className="w-9 h-9 flex-shrink-0">
               <AvatarFallback>{video.uploader.username.slice(0, 1)}</AvatarFallback>
             </Avatar>
-          </Link>
+          </div>
           <div className="min-w-0 flex-1">
             <h3 className="font-medium line-clamp-2 group-hover:text-blue-600">
               {video.title}
             </h3>
-            <Link href={`/channel/${video.uploader.id}`} onClick={(e) => e.stopPropagation()}>
+            <div onClick={handleChannelClick} className="cursor-pointer">
               <p className="text-sm text-gray-600 hover:text-blue-600">{video.uploader.username}</p>
-            </Link>
+            </div>
             <p className="text-sm text-gray-600">
               {video.views} views • {new Date(video.createdAt).toLocaleDateString()}
             </p>
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

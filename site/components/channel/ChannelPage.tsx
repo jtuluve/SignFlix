@@ -6,23 +6,24 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { SubscribeButton } from '@/components/subscriptions/subscribebutton';
 import VideoCard from '@/components/videos/VideoCard';
+import ListViewCard from '@/components/studios/sections/ListViewCard';
 
 export default function ChannelPage({ channel, videos }) {
   const [viewMode, setViewMode] = useState('grid');
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="w-full bg-gray-200 h-32 md:h-48 lg:h-64 relative">
+      <div className="w-full bg-gray-200 h-32 md:h-48 lg:h-64 relative overflow-hidden">
         <Image
-          src={channel.coverUrl || '/placeholder.svg'}
+          src={channel.coverUrl || channel.bannerUrl || '/placeholder.svg'}
           alt={`${channel.username}'s cover image`}
           layout="fill"
           objectFit="cover"
         />
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div className="-mt-12 sm:-mt-16 md:-mt-20 lg:-mt-24 flex items-end gap-4">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-12">
+        <div className="flex items-end gap-4">
           <Avatar className="w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 border-4 border-white">
             <AvatarImage src={channel.avatarUrl} alt={channel.username} />
             <AvatarFallback>{channel.username[0].toUpperCase()}</AvatarFallback>
@@ -33,7 +34,7 @@ export default function ChannelPage({ channel, videos }) {
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 flex justify-end">
           <SubscribeButton creatorId={channel.id} />
         </div>
 
@@ -49,7 +50,11 @@ export default function ChannelPage({ channel, videos }) {
           {videos.length > 0 ? (
             <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6' : 'gap-4'}`}>
               {videos.map(video => (
-                <VideoCard key={video.id} video={video} />
+                viewMode === 'grid' ? (
+                  <VideoCard key={video.id} video={video} />
+                ) : (
+                  <ListViewCard key={video.id} video={video} />
+                )
               ))}
             </div>
           ) : (

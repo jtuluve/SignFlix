@@ -6,11 +6,15 @@ import { getUserByEmail, updateUser } from "@/utils/user";
 type UpdateUserInput = {
   username?: string;
   bio?: string;
+  description?: string;
+  bannerUrl?: string;
 };
 
 export default async function updateUserProfile({
   username,
   bio,
+  description,
+  bannerUrl,
 }: UpdateUserInput) {
   try {
     const session = await getServerSession();
@@ -22,6 +26,8 @@ export default async function updateUserProfile({
     const updatedUser = await updateUser(user.id, {
       ...(username ? { username } : {}),
       ...(bio ? { bio } : {}),
+      ...(description ? { description } : {}),
+      ...(bannerUrl ? { bannerUrl } : {}),
     });
 
     return updatedUser;

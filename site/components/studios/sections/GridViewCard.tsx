@@ -22,7 +22,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-const GridViewCard = ({ video, onDelete }: { video: UploadedVideo; onDelete: (id: string) => void }) => (
+const GridViewCard = ({ video, onDelete, onPublish, onRetry }: { video: UploadedVideo; onDelete: (id: string) => void; onPublish: (id: string) => void; onRetry: (id: string) => void }) => (
     <Card className="overflow-hidden group">
         <div className="relative aspect-video bg-gray-100">
             <Link href={`/watch/${video.id}`} target="_blank">
@@ -39,6 +39,11 @@ const GridViewCard = ({ video, onDelete }: { video: UploadedVideo; onDelete: (id
                     {video.duration}
                 </div>
             )}
+            {!video.isPublished && (
+                <div className="absolute top-2 left-2 bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded">
+                    Draft
+                </div>
+            )}
         </div>
         <CardContent className="p-4 space-y-3">
             <h3 className="font-semibold text-lg line-clamp-2 h-14">
@@ -50,9 +55,16 @@ const GridViewCard = ({ video, onDelete }: { video: UploadedVideo; onDelete: (id
                 <div className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {new Date(video.createdAt).toLocaleDateString()}</div>
             </div>
             <div className="flex items-center gap-2 pt-2">
-                <Link href={`/content/${video.id}`} className="w-full">
-                    <Button variant="outline" size="sm" className="w-full"><Edit className="w-4 h-4 mr-2" /> Edit</Button>
-                </Link>
+                {!video.isPublished ? (
+                    <>
+                        <Button variant="outline" size="sm" className="w-full" onClick={() => onPublish(video.id)}>Publish</Button>
+                        <Button variant="outline" size="sm" className="w-full" onClick={() => onRetry(video.id)}>Retry</Button>
+                    </>
+                ) : (
+                    <Link href={`/content/${video.id}`} className="w-full">
+                        <Button variant="outline" size="sm" className="w-full"><Edit className="w-4 h-4 mr-2" /> Edit</Button>
+                    </Link>
+                )}
                 <DeleteButton onDelete={() => onDelete(video.id)} />
             </div>
         </CardContent>

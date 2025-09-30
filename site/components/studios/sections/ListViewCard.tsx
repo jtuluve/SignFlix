@@ -23,7 +23,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-const ListViewCard = ({ video, onDelete }: { video: UploadedVideo; onDelete: (id: string) => void }) => (
+const ListViewCard = ({ video, onDelete, onPublish, onRetry }: { video: UploadedVideo; onDelete?: (id: string) => void; onPublish?: (id: string) => void; onRetry?: (id: string) => void }) => (
     <Card className="overflow-hidden">
         <div className="flex flex-col md:flex-row">
             <div className="relative w-full md:w-64 md:flex-shrink-0 aspect-video md:aspect-square bg-gray-100">
@@ -39,6 +39,11 @@ const ListViewCard = ({ video, onDelete }: { video: UploadedVideo; onDelete: (id
                 {video.duration && (
                     <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded">
                         {video.duration}
+                    </div>
+                )}
+                {!video.isPublished && onPublish && onRetry && (
+                    <div className="absolute top-2 left-2 bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded">
+                        Draft
                     </div>
                 )}
             </div>
@@ -61,10 +66,17 @@ const ListViewCard = ({ video, onDelete }: { video: UploadedVideo; onDelete: (id
                         <div className="flex items-center gap-1"><Calendar className="w-4 h-4" /> Published on {new Date(video.createdAt).toLocaleDateString()}</div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Link href={`/content/${video.id}`}>
-                            <Button variant="outline" size="sm"><Edit className="w-4 h-4 mr-2" /> Edit</Button>
-                        </Link>
-                        <DeleteButton onDelete={() => onDelete(video.id)} />
+                        {!video.isPublished && onPublish && onRetry ? (
+                            <>
+                                <Button variant="outline" size="sm" onClick={() => onPublish(video.id)}>Publish</Button>
+                                <Button variant="outline" size="sm" onClick={() => onRetry(video.id)}>Retry</Button>
+                            </>
+                        ) : (
+                            <Link href={`/content/${video.id}`}>
+                                <Button variant="outline" size="sm"><Edit className="w-4 h-4 mr-2" /> Edit</Button>
+                            </Link>
+                        )}
+                        {onDelete && <DeleteButton onDelete={() => onDelete(video.id)} />}
                     </div>
                 </div>
             </CardContent>
