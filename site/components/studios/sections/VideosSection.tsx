@@ -63,7 +63,13 @@ export default function VideosSection() {
     };
 
     useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 2000);
+
         loadVideos(1);
+
+        return () => clearTimeout(timer);
     }, [session?.user?.id]);
 
     const loadVideos = async (pageNum: number) => {
@@ -95,9 +101,9 @@ export default function VideosSection() {
         return (
             <div className="flex flex-col items-center justify-center text-center py-20">
                 <Video className="w-24 h-24 text-gray-300 mb-4" />
-                <h2 className="text-2xl font-bold mb-2">No videos yet</h2>
+                <h2 className="text-2xl font-bold mb-2">No videos found</h2>
                 <p className="text-gray-500 mb-6">
-                    Looks like you haven't uploaded any videos. Get started by uploading your first one!
+                    Looks like you haven't uploaded any videos, or there was an issue loading them. Get started by uploading your first one!
                 </p>
                 <Link href="/upload">
                     <Button>Upload Video</Button>
