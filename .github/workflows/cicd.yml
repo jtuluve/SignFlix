@@ -234,7 +234,7 @@ jobs:
       - name: Check for environment variable leaks in build output
         run: |
           echo "Checking for sensitive environment variables in Next.js build output..."
-          if grep -rE "(API_KEY|SECRET|TOKEN|PASSWORD|DB_URL)=" ./site/.next; then
+          if grep -rE "(API_KEY|SECRET|TOKEN|PASSWORD|DB_URL)=" ./.next; then
             echo "::error::Potential environment variable leak detected in Next.js build output!"
             exit 1
           else
@@ -248,7 +248,7 @@ jobs:
           # This is a placeholder. A real check would involve deploying to a temporary environment
           # or using a tool that can analyze the built output for security headers.
           # For now, we'll just ensure the build output exists.
-          if [ -d "./site/.next" ]; then
+          if [ -d "./.next" ]; then
             echo "Next.js build output directory exists. Further security header analysis would require deployment or specialized tools."
           else
             echo "::error::Next.js build output directory not found. Cannot perform security header check."

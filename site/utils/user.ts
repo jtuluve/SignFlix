@@ -46,7 +46,7 @@ export async function getUser(id: string) {
 }
 
 export async function getUserByEmail(email: string) {
-  return await db.user.findUnique({ where: { email } });
+  return await db.user.findUnique({ where: { email: email.toLowerCase() } });
 }
 
 export async function getUserByUsername(username: string) {
@@ -54,6 +54,7 @@ export async function getUserByUsername(username: string) {
 }
 
 export async function createUser(user: Prisma.UserCreateInput) {
+  user.email = user.email.toLowerCase();
   return await db.user.create({ data: user });
 }
 
