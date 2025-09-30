@@ -149,7 +149,7 @@ export async function getVideosByCategory(category: string) {
 // }
 
 export async function searchVideos(query: string, isPublished?: boolean) {
-  const sanitizedQuery = query.trim();
+  const sanitizedQuery = query.trim().toLowerCase();
   if (!sanitizedQuery || sanitizedQuery.length > 100) {
     throw new Error("Search query too long");
   }

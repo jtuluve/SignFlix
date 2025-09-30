@@ -12,6 +12,7 @@ import uploadVideo from "@/lib/uploadVideo";
 import { Toaster, toast } from 'sonner';
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 export default function UploadSection() {
   const [dragActive, setDragActive] = useState(false);
@@ -22,6 +23,7 @@ export default function UploadSection() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   const [metadata, setMetadata] = useState({
     title: "",
@@ -125,6 +127,7 @@ export default function UploadSection() {
       await uploadVideo({ data, videoFile, captionFile, thumbnailFile });
       toast.success("Video published successfully!");
       resetForm();
+      router.push('/content');
     } catch (error) {
       console.error("Failed to publish video:", error);
       toast.error("Failed to publish video. Please try again.");

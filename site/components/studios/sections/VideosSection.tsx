@@ -19,6 +19,15 @@ import ListViewCard from "./ListViewCard";
 import GridSkeletonCard from "./GridSkeletonCard";
 import ListSkeletonCard from "./ListSkeletonCard";
 
+type GetVideosByUserSignature = (
+    uploaderId: string,
+    take?: number,
+    skip?: number,
+    isPublished?: boolean
+) => Promise<UploadedVideo[]>;
+
+const typedGetVideosByUser: GetVideosByUserSignature = getVideosByUser;
+
 export type UploadedVideo = {
     id: string;
     createdAt: Date;
@@ -78,7 +87,7 @@ export default function VideosSection() {
         if (!session?.user?.id) return;
         setIsLoading(true);
         try {
-            const newVideos = await getVideosByUser(session.user.id, BATCH_SIZE, (pageNum - 1) * BATCH_SIZE, filterStatus === "published");
+            const newVideos = await typedGetVideosByUser(session.user.id, BATCH_SIZE, (pageNum - 1) * BATCH_SIZE, filterStatus === "published");
             if (pageNum === 1) {
                 setVideos(newVideos);
             } else {
