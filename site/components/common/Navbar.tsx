@@ -411,7 +411,7 @@ export default function Navbar() {
                 className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-100"
                 onClick={closeSidebar}
               >
-                <FileText className="w-6 h-6 flex-shrink-0" />
+                <Library className="w-6 h-6 flex-shrink-0" />
                 <span
                   className={`${!isSidebarOpen ? "md:hidden xl:hidden" : ""}`}
                 >
@@ -451,6 +451,18 @@ export default function Navbar() {
                   </span>
                 </Link>
               }
+              <Link
+                href={"/terms"}
+                className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-gray-100"
+                onClick={closeSidebar}
+              >
+                <FileText className="w-6 h-6 flex-shrink-0" />
+                <span
+                  className={`${!isSidebarOpen ? "md:hidden xl:hidden" : ""}`}
+                >
+                  Terms
+                </span>
+              </Link>
             </div>
           </div>
         </nav>
@@ -476,7 +488,7 @@ export default function Navbar() {
               }`}
             onClick={() => setActiveTab("subscriptions")}
           >
-            <FileText className="h-5 w-5 mb-0.5" />
+            <Library className="h-5 w-5 mb-0.5" />
             <span className="text-xs font-medium leading-tight">Subs</span>
           </Link>
           {session?.user ? (

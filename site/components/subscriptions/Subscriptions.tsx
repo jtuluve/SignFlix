@@ -524,37 +524,39 @@ const Subscriptions = () => {
 
             {/* Empty state */}
             {((subscriptions.length > 0 && videos.length === 0) || (subscriptions.length === 0 && suggestedVideos.length === 0)) && (
-              <div className="text-center py-12">
-                <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                  {selectedChannel ? (
-                    <Avatar className="w-16 h-16">
-                      <AvatarFallback className="font-semibold text-red-600">{selectedChannel.username[0].toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                  ) : (
-                    <Bell className="w-8 h-8 text-gray-400" />
+              <div className="flex items-center justify-center" style={{ height: 'calc(100vh - 200px)' }}>
+                <div className="text-center">
+                  <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                    {selectedChannel ? (
+                      <Avatar className="w-16 h-16">
+                        <AvatarFallback className="font-semibold text-red-600">{selectedChannel.username[0].toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                    ) : (
+                      <Bell className="w-8 h-8 text-gray-400" />
+                    )}
+                  </div>
+                  <h3 className="text-lg font-medium mb-2">
+                    {subscriptions.length === 0 
+                      ? 'No videos available'
+                      : selectedChannel 
+                      ? `No videos from ${selectedChannel.username}` 
+                      : 'No videos found'
+                    }
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    {subscriptions.length === 0
+                      ? 'Start by subscribing to some creators to see their latest videos here.'
+                      : selectedChannel
+                      ? `Try adjusting your filters or check back later for new content from ${selectedChannel.username}.`
+                      : 'Try adjusting your filters or check back later for new content.'
+                    }
+                  </p>
+                  {selectedChannel && (
+                    <Button variant="outline" onClick={handleAllChannels}>
+                      View All Channels
+                    </Button>
                   )}
                 </div>
-                <h3 className="text-lg font-medium mb-2">
-                  {subscriptions.length === 0 
-                    ? 'No videos available'
-                    : selectedChannel 
-                    ? `No videos from ${selectedChannel.username}` 
-                    : 'No videos found'
-                  }
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  {subscriptions.length === 0
-                    ? 'Start by subscribing to some creators to see their latest videos here.'
-                    : selectedChannel
-                    ? `Try adjusting your filters or check back later for new content from ${selectedChannel.username}.`
-                    : 'Try adjusting your filters or check back later for new content.'
-                  }
-                </p>
-                {selectedChannel && (
-                  <Button variant="outline" onClick={handleAllChannels}>
-                    View All Channels
-                  </Button>
-                )}
               </div>
             )}
           </>
