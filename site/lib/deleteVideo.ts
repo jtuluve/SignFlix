@@ -1,7 +1,7 @@
 "use server";
 
 import { getServerSession } from "next-auth";
-import { deleteVideo, getVideoById } from "@/utils/video";
+import { deleteVideo } from "@/utils/video";
 import { getUserByEmail } from "@/utils/user";
 
 export default async function deleteVideoById(id: string) {

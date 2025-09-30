@@ -17,6 +17,7 @@ export default function WatchPage({ video, channel, videoUrl, captionUrl, signVi
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [subscribersCount, setSubscribersCount] = useState(channel?.subscribers ?? 0);
     const [viewCount, setViewCount] = useState(views);
+    const [initialLiked, setInitialLiked] = useState(false);
 
     useEffect(() => {
         incrementVideoViews(id).then(() => {

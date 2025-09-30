@@ -37,6 +37,7 @@
 		"app/api/auth/[...nextauth].js"
 	],
 	"exclude": [
-		"node_modules"
+		"node_modules",
+		".next"
 	]
 }
