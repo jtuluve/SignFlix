@@ -5,6 +5,23 @@ import { getVideos } from "@/utils/video";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { type Video, type User } from "@prisma/client";
 
+const formatDuration = (seconds?: number) => {
+  if (seconds === undefined || seconds === null) return "0:00";
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
+const formatTimeAgo = (date: Date) => {
+  const now = new Date();
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+  
+  if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
+  if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} hours ago`;
+  if (diffInMinutes < 10080) return `${Math.floor(diffInMinutes / 1440)} days ago`;
+  return `${Math.floor(diffInMinutes / 10080)} weeks ago`;
+};
+
 type VideoWithUploader = Video & { uploader: User };
 
 export default async function Feed() {
@@ -42,7 +59,7 @@ export default async function Feed() {
 												className="object-cover group-hover:scale-102 transition-transform duration-500"
 											/>
 											<div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded">
-												{video.duration}
+												{formatDuration(video.duration)}
 											</div>
 										</div>
 										<div className="flex items-start gap-3">
@@ -55,7 +72,7 @@ export default async function Feed() {
 												</h3>
 												<p className="text-sm text-gray-600">{video.uploader.username}</p>
 												<p className="text-sm text-gray-600">
-													{video.views} views • {new Date(video.createdAt).toLocaleDateString()}
+													{video.views} views • {formatTimeAgo(video.createdAt)}
 												</p>
 											</div>
 										</div>
