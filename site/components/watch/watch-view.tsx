@@ -144,9 +144,21 @@ export default function WatchView({
         captionJson = await newExtract(captionUrl);
         setCaptions(captionJson);
       }
-      poseJson = await fetch(video.signTimeUrl).then((res) => res.json());
-      console.log(poseJson);
-      (Array.from(poseJson) as any)?.forEach((element) => fetch(element.poseUrl));
+      if (video.signTimeUrl) {
+        try {
+          const fetchedPoseJson = await fetch(video.signTimeUrl).then((res) => res.json());
+          if (Array.isArray(fetchedPoseJson)) {
+            poseJson = fetchedPoseJson;
+            (poseJson as any)?.forEach((element) => fetch(element.poseUrl));
+          } else {
+            console.warn("Fetched pose data is not an array:", fetchedPoseJson);
+            poseJson = null;
+          }
+        } catch (error) {
+          console.error("Error fetching or parsing pose data:", error);
+          poseJson = null;
+        }
+      }
     })();
 
     let getCaptionInterval = setInterval(async () => {
@@ -154,9 +166,11 @@ export default function WatchView({
       getCaption = captionJson?.find(
         (element) => element.start <= currentTime && element.end >= currentTime
       );
-      let pose = (Array.from(poseJson) as any)?.find((element) => element.sequence == getCaption?.id);
-      if (pose) {
-        setPoseData(pose.poseUrl);
+      if (poseJson && Array.isArray(poseJson)) {
+        let pose = (poseJson as any)?.find((element) => element.sequence == getCaption?.id);
+        if (pose) {
+          setPoseData(pose.poseUrl);
+        }
       }
     }, 1000);
     return () => clearInterval(getCaptionInterval);
