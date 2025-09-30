@@ -148,25 +148,31 @@ export async function getVideosByCategory(category: string) {
 //   });
 // }
 
-export async function searchVideos(query: string) {
+export async function searchVideos(query: string, isPublished?: boolean) {
   const sanitizedQuery = query.trim();
   if (!sanitizedQuery || sanitizedQuery.length > 100) {
     throw new Error("Search query too long");
   }
 
-  return await db.$queryRawUnsafe(`
-    SELECT v.*, u.*, COUNT(l."id") as "likesCount"
-    FROM "Video" v
-    JOIN "User" u ON u.id = v."uploaderId"
-    LEFT JOIN "Like" l ON l."videoId" = v.id
-    WHERE to_tsvector('english', v.title || ' ' || v.description || ' ' || array_to_string(v.tags, ' '))
-      @@ plainto_tsquery('english', $1)
-    GROUP BY v.id, u.id
-    ORDER BY ts_rank(
-      to_tsvector('english', v.title || ' ' || v.description || ' ' || array_to_string(v.tags, ' ')),
-      plainto_tsquery('english', $1)
-    ) DESC;
-  `, sanitizedQuery);
+  return await db.video.findMany({
+    where: {
+      ...(isPublished !== undefined && { isPublished }),
+      OR: [
+        { title: { contains: sanitizedQuery, mode: "insensitive" } },
+        { description: { contains: sanitizedQuery, mode: "insensitive" } },
+        { tags: { hasSome: [sanitizedQuery] } },
+      ],
+    },
+    include: {
+      uploader: true,
+      _count: {
+        select: {
+          likesList: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
 }
 
 

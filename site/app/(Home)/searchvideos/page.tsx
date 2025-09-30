@@ -36,9 +36,9 @@ export default async function Page({
   let videos: SearchedVideo[] = [];
 
   if (q) {
-    videos = await searchVideos(q) as SearchedVideo[];
+    videos = await searchVideos(q, true) as SearchedVideo[];
   } else {
-    videos = await getVideos() as SearchedVideo[];
+    videos = await getVideos(true) as SearchedVideo[];
   }
 
   return (
