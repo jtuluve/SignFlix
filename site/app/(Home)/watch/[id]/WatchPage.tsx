@@ -9,6 +9,7 @@ import { getVideobyId, incrementVideoViews } from "@/utils/video"
 import { useSession } from "next-auth/react"
 import { useEffect, useState, useCallback } from "react"
 import { isVideoLiked } from "@/utils/likes"
+import Link from "next/link"
 
 export default function WatchPage({ video, channel, videoUrl, captionUrl, signVideoUrl, posterUrl, title, views, time, description, id }) {
     const { data: session, status } = useSession();
@@ -87,15 +88,19 @@ export default function WatchPage({ video, channel, videoUrl, captionUrl, signVi
   
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage
-                      src={channel?.avatar || "/placeholder.svg?height=80&width=80&query=channel%20avatar"}
-                      alt={`${channel?.name ?? "Unknown Channel"} channel avatar`}
-                    />
-                    <AvatarFallback>{(channel?.name ?? "U").slice(0, 1)}</AvatarFallback>
-                  </Avatar>
+                  <Link href={`/channel/${channel?.id}`}>
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage
+                        src={channel?.avatar || "/placeholder.svg?height=80&width=80&query=channel%20avatar"}
+                        alt={`${channel?.name ?? "Unknown Channel"} channel avatar`}
+                      />
+                      <AvatarFallback>{(channel?.name ?? "U").slice(0, 1)}</AvatarFallback>
+                    </Avatar>
+                  </Link>
                   <div>
-                    <div className="font-bold text-lg">{channel?.name ?? "Unknown Channel"}</div>
+                    <Link href={`/channel/${channel?.id}`}>
+                      <div className="font-bold text-lg hover:text-blue-600">{channel?.name ?? "Unknown Channel"}</div>
+                    </Link>
                     <div className="text-sm text-muted-foreground">{Math.max(0, subscribersCount)} subscribers</div>
                   </div>
                 </div>

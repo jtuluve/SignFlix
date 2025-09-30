@@ -21,14 +21,18 @@ export default function VideoCard({ video }: { video: VideoWithUploader }) {
           </div>
         </div>
         <div className="flex items-start gap-3">
-          <Avatar className="w-9 h-9 flex-shrink-0">
-            <AvatarFallback>{video.uploader.username.slice(0, 1)}</AvatarFallback>
-          </Avatar>
+          <Link href={`/channel/${video.uploader.id}`} onClick={(e) => e.stopPropagation()}>
+            <Avatar className="w-9 h-9 flex-shrink-0">
+              <AvatarFallback>{video.uploader.username.slice(0, 1)}</AvatarFallback>
+            </Avatar>
+          </Link>
           <div className="min-w-0 flex-1">
             <h3 className="font-medium line-clamp-2 group-hover:text-blue-600">
               {video.title}
             </h3>
-            <p className="text-sm text-gray-600">{video.uploader.username}</p>
+            <Link href={`/channel/${video.uploader.id}`} onClick={(e) => e.stopPropagation()}>
+              <p className="text-sm text-gray-600 hover:text-blue-600">{video.uploader.username}</p>
+            </Link>
             <p className="text-sm text-gray-600">
               {video.views} views • {new Date(video.createdAt).toLocaleDateString()}
             </p>
