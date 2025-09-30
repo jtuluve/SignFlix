@@ -14,6 +14,7 @@ import {
   unsubscribeFromCreatorAction
 } from "@/lib/subscriptions";
 import { QuickSubscribeButton } from "@/components/subscriptions/subscribebutton";
+import VideoCardSkeleton from "../videos/VideoCardSkeleton";
 
 interface Channel {
   id: string;
@@ -412,8 +413,10 @@ const Subscriptions = () => {
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <VideoCardSkeleton key={i} />
+            ))}
           </div>
         ) : (
           <>

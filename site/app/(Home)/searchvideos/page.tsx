@@ -1,8 +1,7 @@
-import Link from "next/link";
-import Image from "next/image";
 import { searchVideos, getVideos } from "@/utils/video";
 import { type Video, type User } from "@prisma/client";
 import type { Metadata } from "next";
+import VideoCard from "@/components/videos/VideoCard";
 
 export async function generateMetadata({
   searchParams,
@@ -16,95 +15,22 @@ export async function generateMetadata({
   return {
     title: title,
     description: description,
-    openGraph: {
-      title: title,
-      description: description,
-      images: [
-        {
-          url: "/placeholder-logo.png", 
-          alt: "SignFlix Search",
-        },
-      ],
-      siteName: "SignFlix",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: title,
-      description: description,
-      images: ["/placeholder-logo.png"],
-    },
   };
-}
-
-function formatNumberShort(n: number): string {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
-  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
-  return String(n);
-}
-
-function formatTimeAgo(date: Date): string {
-  const diff = Date.now() - date.getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins} min${mins === 1 ? "" : "s"} ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} day${days === 1 ? "" : "s"} ago`;
-  const weeks = Math.floor(days / 7);
-  if (weeks < 5) return `${weeks} week${weeks === 1 ? "" : "s"} ago`;
-  const months = Math.floor(days / 30);
-  if (months < 12) return `${months} month${months === 1 ? "" : "s"} ago`;
-  const years = Math.floor(days / 365);
-  return `${years} year${years === 1 ? "" : "s"} ago`;
-}
-
-function formatDuration(seconds?: number | null): string {
-  if (!seconds || seconds <= 0) return "";
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  const mm = String(m).padStart(2, "0");
-  const ss = String(s).padStart(2, "0");
-  return h > 0 ? `${h}:${mm}:${ss}` : `${m}:${ss}`;
 }
 
 type SearchedVideo = Video & { uploader: User };
 
 export default async function Page({
   searchParams,
-}: {
-  searchParams: { q?: string };
-}) {
+}: { searchParams: { q?: string } }) {
   const q = (searchParams?.q ?? "").toString().trim();
-  let noResults = false;
+  let videos: SearchedVideo[] = [];
 
-  let dbVideos: SearchedVideo[] = [];
   if (q) {
-    try {
-      dbVideos = await searchVideos(q) as SearchedVideo[];
-      if (dbVideos.length === 0) {
-        noResults = true;
-        dbVideos = await getVideos() as SearchedVideo[];
-      }
-    } catch (e) {
-      dbVideos = await getVideos() as SearchedVideo[];
-      noResults = true;
-    }
+    videos = await searchVideos(q) as SearchedVideo[];
   } else {
-    dbVideos = await getVideos() as SearchedVideo[];
+    videos = await getVideos() as SearchedVideo[];
   }
-
-  const items = (dbVideos || []).map((v) => {
-    return {
-      id: v.id,
-      title: v.title,
-      thumbnail: v.thumbnailUrl || "/placeholder.svg",
-      duration: formatDuration(v.duration ?? undefined),
-      views: formatNumberShort(v.views ?? 0),
-      time: formatTimeAgo(new Date(v.createdAt)),
-      channel: v.uploader?.username || "Unknown",
-    };
-  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -116,37 +42,20 @@ export default async function Page({
                 Search results for: <span className="font-semibold">{q}</span>
               </h2>
             )}
-            {noResults && (
-                <div className="col-span-full text-sm text-red-600 mb-4">No results found for your query. Showing latest videos instead.</div>
+            {videos.length === 0 && (
+              <div className="col-span-full text-center py-16">
+                <h3 className="text-xl font-semibold mb-3 text-gray-900">
+                  No results found for "{q}"
+                </h3>
+                <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                  Try searching for something else.
+                </p>
+              </div>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {items.map((video) => (
-                <Link key={video.id} href={`/watch/${video.id}`} className="group">
-                  <div className="space-y-3">
-                    <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
-                      <Image
-                        src={video.thumbnail}
-                        alt={video.title}
-                        fill
-                        className="object-cover group-hover:scale-102 transition-transform duration-500"
-                      />
-                      {video.duration && (
-                        <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded">
-                          {video.duration}
-                        </div>
-                      )}
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="font-medium line-clamp-2 group-hover:text-blue-600">{video.title}</h3>
-                      <p className="text-sm text-gray-600">{video.channel}</p>
-                      <p className="text-sm text-gray-600">{video.views} • {video.time}</p>
-                    </div>
-                  </div>
-                </Link>
+              {videos.map((video) => (
+                <VideoCard key={video.id} video={video} />
               ))}
-              {!q && items.length === 0 && (
-                <div className="col-span-full text-sm text-gray-600">Enter a search query to see results.</div>
-              )}
             </div>
           </div>
         </main>

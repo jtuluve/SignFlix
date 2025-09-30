@@ -12,10 +12,10 @@
  * or rejects with an error.
  */
 import dotenv from 'dotenv';
-dotenv.config();    
+dotenv.config();
 export default async function convertToASL(englishSentence) {
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${process.env.GEMINI_API_KEY}`;
-    console.log(apiUrl);
+    // console.log(apiUrl);
 
     if (!englishSentence) {
         throw new Error("Input sentence cannot be empty.");
@@ -61,7 +61,7 @@ Your response should only contain the converted sentence, with no extra explanat
         const candidate = result.candidates?.[0];
 
         if (candidate && candidate.content?.parts?.[0]?.text) {
-            console.log(candidate.content.parts[0].text);
+            // console.log(candidate.content.parts[0].text);
             return candidate.content.parts[0].text;
         } else {
             throw new Error('No text found in API response. Please check your input and API key.');

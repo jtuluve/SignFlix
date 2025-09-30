@@ -48,8 +48,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function Page({ params }: PageProps) {
-  const id = params?.id ?? "1";
+export default async function Page({ params = {} }: PageProps) {
+  const { id = "1" } = await params;
   const video = await getVideobyId(id);
 
   const videoUrl = video?.videoUrl ?? null

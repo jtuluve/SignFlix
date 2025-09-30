@@ -113,7 +113,6 @@ export default function WatchView({
     if (sign) sign.playbackRate = targetRate;
     main.onplay = async () => {
       setIsMainVideoPlaying(true);
-      console.log("Trii")
       sign?.play();
     };
     main.onpause = () => {
@@ -142,12 +141,25 @@ export default function WatchView({
 
     (async () => {
       if (captionUrl) {
-        captionJson = await newExtract(captionUrl);
-        setCaptions(captionJson);
+        try {
+          captionJson = await newExtract(captionUrl);
+          setCaptions(captionJson);
+        } catch (error) {
+          console.error("Error fetching or parsing captions:", error);
+          setCaptions([]);
+        }
       }
-      poseJson = await fetch(video.signTimeUrl).then((res) => res.json());
-      console.log(poseJson);
-      (Array.from(poseJson) as any)?.forEach((element) => fetch(element.poseUrl));
+      if (video?.signTimeUrl) {
+        try {
+          poseJson = await fetch(video.signTimeUrl).then((res) => res.json());
+          if (poseJson) {
+            (Array.from(poseJson) as any)?.forEach((element) => fetch(element.poseUrl));
+          }
+        } catch (error) {
+          console.error("Error fetching or parsing pose data:", error);
+          poseJson = null;
+        }
+      }
     })();
 
     let getCaptionInterval = setInterval(async () => {
@@ -155,13 +167,15 @@ export default function WatchView({
       getCaption = captionJson?.find(
         (element) => element.start <= currentTime && element.end >= currentTime
       );
-      let pose = (Array.from(poseJson) as any)?.find((element) => element.sequence == getCaption?.id);
-      if (pose) {
-        setPoseData(pose.poseUrl);
+      if (poseJson) {
+        let pose = (Array.from(poseJson) as any)?.find((element) => element.sequence == getCaption?.id);
+        if (pose) {
+          setPoseData(pose.poseUrl);
+        }
       }
     }, 1000);
     return () => clearInterval(getCaptionInterval);
-  }, []);
+  }, [captionUrl, video?.signTimeUrl]);
 
   const findCurrentCaption = useCallback(
     (
@@ -202,7 +216,6 @@ export default function WatchView({
         captions.length > 0 &&
         Math.abs(t - lastCaptionTime) > 0.1
       ) {
-        console.log("AAAAA")
         lastCaptionTime = t;
         const caption = findCurrentCaption(t, captions);
         const newCaptionText = caption?.text || "";

@@ -1,17 +1,20 @@
-import CreatorNav from "@/components/studios/CreatorNav";
-import type { Metadata } from "next";
+"use client";
 
-export const metadata: Metadata = {
-	title: "SignFlix - Creator Dashboard",
-	description:
-		"An accessible video streaming platform with integrated sign language interpretation for the deaf and hard-of-hearing community.",
-};
+import CreatorNav from "@/components/studios/CreatorNav";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
 
 export default function RootLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
+	const { data: session, status } = useSession();
+
+	if (status === "unauthenticated") {
+		redirect("/signin");
+	}
+
 	return (
 		<div className="min-h-screen bg-background">
 			<CreatorNav />

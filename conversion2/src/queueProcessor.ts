@@ -28,11 +28,11 @@ async function processSingleVideo(videoId: string): Promise<void> {
       const poseFile = await textToPoseFile(caption.caption);
       const posePath = path.join("./poses", `pose_${caption.sequence}.pose`);
       fs.writeFileSync(posePath, poseFile);
-      console.log(`[${videoId}] Wrote pose file for sequence ${caption.sequence} to ${posePath}.`);
+      // console.log(`[${videoId}] Wrote pose file for sequence ${caption.sequence} to ${posePath}.`);
 
       // 2. Upload pose file to blob
       const poseUrl = await uploadToBlob("poses", posePath);
-      console.log(`[${videoId}] Uploaded pose file for sequence ${caption.sequence} to blob: ${poseUrl}.`);
+      // console.log(`[${videoId}] Uploaded pose file for sequence ${caption.sequence} to blob: ${poseUrl}.`);
 
       // 3. Add to sequence
       poseSequence.push({
@@ -46,11 +46,11 @@ async function processSingleVideo(videoId: string): Promise<void> {
     // 4. Save pose sequence to json file
     const jsonPath = path.join("./poses", `pose_sequence_${videoId}.json`);
     fs.writeFileSync(jsonPath, JSON.stringify(poseSequence, null, 2));
-    console.log(`[${videoId}] Wrote pose sequence JSON to ${jsonPath}.`);
+    // console.log(`[${videoId}] Wrote pose sequence JSON to ${jsonPath}.`);
 
     // 5. Upload json to blob
     const jsonUrl = await uploadToBlob("results", jsonPath);
-    console.log(`[${videoId}] Uploaded pose sequence JSON to blob: ${jsonUrl}.`);
+    // console.log(`[${videoId}] Uploaded pose sequence JSON to blob: ${jsonUrl}.`);
 
     // 6. Save to DB
     await saveResultToDb(videoId, jsonUrl);

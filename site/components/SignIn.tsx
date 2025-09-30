@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 export default function SignIn() {
     const [name, setName] = useState("");
@@ -18,6 +18,7 @@ export default function SignIn() {
     const [password, setPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const { data: session } = useSession();
 
@@ -44,7 +45,11 @@ export default function SignIn() {
             if (result?.ok) {
                 window.location.replace("/");
             } else {
-                setErrorMessage(result?.error || "Invalid credentials. Please try again.");
+                if (result?.error === "CredentialsSignin") {
+                    setErrorMessage("Invalid email or password. Please try again.");
+                } else {
+                    setErrorMessage(result?.error || "Invalid credentials. Please try again.");
+                }
             }
         } catch (error) {
             setErrorMessage("An unexpected error occurred. Please try again.");
@@ -95,9 +100,12 @@ export default function SignIn() {
                                     <Label htmlFor="email">Email</Label>
                                     <Input id="email" type="email" placeholder="m@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-2 relative">
                                     <Label htmlFor="password">Password</Label>
-                                    <Input id="password" placeholder="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                                    <Input id="password" placeholder="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required />
+                                    <Button variant="ghost" size="icon" className="absolute bottom-1 right-1 h-7 w-7" onClick={() => setShowPassword(!showPassword)}>
+                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </Button>
                                 </div>
                                 {errorMessage && (
                                     <p className="text-sm text-red-500 text-center">{errorMessage}</p>
@@ -105,7 +113,8 @@ export default function SignIn() {
                             </CardContent>
                             <CardFooter>
                                 <Button onClick={handleSignIn} disabled={isLoading} className="w-full">
-                                    {isLoading ? <Skeleton className="h-4 w-24" /> : "Login"}
+                                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} 
+                                    {isLoading ? "Signing in..." : "Login"}
                                 </Button>
                             </CardFooter>
                         </Card>
@@ -125,9 +134,12 @@ export default function SignIn() {
                                     <Label htmlFor="email">Email</Label>
                                     <Input id="email" type="email" placeholder="m@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-2 relative">
                                     <Label htmlFor="password">Password</Label>
-                                    <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                                    <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                                    <Button variant="ghost" size="icon" className="absolute bottom-1 right-1 h-7 w-7" onClick={() => setShowPassword(!showPassword)}>
+                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </Button>
                                 </div>
                                 {errorMessage && (
                                     <p className="text-sm text-red-500 text-center">{errorMessage}</p>
@@ -135,7 +147,8 @@ export default function SignIn() {
                             </CardContent>
                             <CardFooter>
                                 <Button onClick={handleSignUp} disabled={isLoading} className="w-full">
-                                    {isLoading ? <Skeleton className="h-4 w-24" /> : "Sign Up"}
+                                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} 
+                                    {isLoading ? "Signing up..." : "Sign Up"}
                                 </Button>
                             </CardFooter>
                         </Card>

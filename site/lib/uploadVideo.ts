@@ -6,9 +6,10 @@ import { QueueClient } from "@azure/storage-queue";
 import path from "path";
 import { createVideo } from "@/utils/video";
 import { getServerSession } from "next-auth";
+
 const account = process.env.AZURE_STORAGE_ACCOUNT;
 const sasToken = process.env.AZURE_BLOB_SAS_TOKEN;
-const queueConnectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+const queueConnectionString = process.env.AZURE_QUEUE_CONNECTION_STRING;
 
 type meta = {
   title: string;

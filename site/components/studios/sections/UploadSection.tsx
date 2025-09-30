@@ -132,7 +132,7 @@ export default function UploadSection() {
           <Toaster position="top-right" closeButton />
           <div
             className={cn(
-              "border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300",
+              "border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 cursor-pointer",
               dragActive ? "border-red-500 bg-red-50 scale-105" : "border-gray-300 hover:border-red-300"
             )}
             onDragEnter={handleDrag}
@@ -202,7 +202,7 @@ export default function UploadSection() {
                   <ImageIcon className="w-10 h-10 text-gray-400" />
                 )}
               </div>
-              <Input type="file" accept="image/*" onChange={(e) => setThumbnailFile(e.target.files?.[0] ?? null)} />
+              <Input type="file" accept="image/*" onChange={(e) => setThumbnailFile(e.target.files?.[0] ?? null)} className="cursor-pointer" />
             </CardContent>
           </Card>
 
@@ -212,7 +212,7 @@ export default function UploadSection() {
               <CardDescription>Upload a caption file to make your video accessible.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Input type="file" accept=".srt" onChange={(e) => setCaptionFile(e.target.files?.[0] ?? null)} />
+              <Input type="file" accept=".srt" onChange={(e) => setCaptionFile(e.target.files?.[0] ?? null)} className="cursor-pointer" />
               {captionFile && (
                 <div className="flex items-center gap-2 mt-2 text-sm text-green-600">
                   <CheckCircle className="w-4 h-4" />

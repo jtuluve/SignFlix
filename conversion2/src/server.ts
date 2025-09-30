@@ -4,7 +4,7 @@ import express from "express";
 import { processVideoFromQueue } from "./queueProcessor"; // We will create this file next
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 app.use(express.json());
 

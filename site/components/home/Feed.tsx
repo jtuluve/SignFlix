@@ -10,6 +10,17 @@ type VideoWithUploader = Video & { uploader: User };
 export default async function Feed() {
     const videos: VideoWithUploader[] = await getVideos() as VideoWithUploader[];
 
+    if (videos.length === 0) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold mb-2">No videos yet</h2>
+                    <p className="text-gray-500">It looks like there are no videos here. Why not upload one?</p>
+                </div>
+            </div>
+        );
+    }
+
 	return (
 		<div className="min-h-screen bg-background">
 			<div className="flex">

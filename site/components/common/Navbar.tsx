@@ -479,15 +479,28 @@ export default function Navbar() {
             <FileText className="h-5 w-5 mb-0.5" />
             <span className="text-xs font-medium leading-tight">Subs</span>
           </Link>
-          <Link
-            href="/analytics"
-            className="flex flex-1 flex-col items-center justify-center py-2"
-          >
-            <div className="bg-red-600 rounded-full p-2 mb-0.5">
-              <Plus className="h-4 w-4 text-white" />
-            </div>
-            <span className="text-xs font-medium text-gray-600">Studio</span>
-          </Link>
+          {session?.user ? (
+            <Link
+              href="/analytics"
+              className="flex flex-1 flex-col items-center justify-center py-2"
+            >
+              <div className="bg-red-600 rounded-full p-2 mb-0.5">
+                <Plus className="h-4 w-4 text-white" />
+              </div>
+              <span className="text-xs font-medium text-gray-600">Studio</span>
+            </Link>
+          ) : (
+            <Link
+              href="/signin"
+              className={`flex flex-1 flex-col items-center justify-center py-2 ${
+                activeTab === "profile" ? "text-red-600" : "text-gray-600"
+              }`}
+              onClick={() => setActiveTab("profile")}
+            >
+              <User className="h-5 w-5 mb-0.5" />
+              <span className="text-xs font-medium">Sign In</span>
+            </Link>
+          )}
           <Link
             href="/liked"
             className={`flex flex-1 flex-col items-center justify-center py-2 ${activeTab === "liked" ? "text-red-600" : "text-gray-600"
