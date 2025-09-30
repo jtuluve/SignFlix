@@ -99,7 +99,7 @@ export default function VideosSection() {
 
     if (videos.length === 0 && !isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center text-center py-20">
+            <div className="flex flex-col items-center justify-center text-center min-h-[calc(100vh-5.5rem)] md:min-h-[calc(100vh-4rem)]">
                 <Video className="w-24 h-24 text-gray-300 mb-4" />
                 <h2 className="text-2xl font-bold mb-2">No videos found</h2>
                 <p className="text-gray-500 mb-6">
