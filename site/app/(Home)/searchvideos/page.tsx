@@ -9,12 +9,21 @@ export async function generateMetadata({
   const q = (searchParams?.q ?? "").toString().trim();
   const title = q ? `Search results for "${q}" - SignFlix` : "Search Videos - SignFlix";
   const description = q
-    ? `Explore videos related to "${q}" on SignFlix.`
-    : "Search for videos with sign language interpretation on SignFlix.";
+    ? `Explore videos related to "${q}" with sign language interpretation on SignFlix. An accessible video experience for the Deaf and hard-of-hearing community.`
+    : "Search for videos with sign language interpretation on SignFlix. Discover accessible content for the Deaf and hard-of-hearing community.";
+  const keywords = ["SignFlix", "search videos", "sign language", "ASL", "BSL", "accessible video", "Deaf community", "hard of hearing", "video streaming", ...(q ? q.split(' ') : [])];
 
   return {
     title: title,
     description: description,
+    keywords: keywords,
+    openGraph: {
+      title: title,
+      description: description,
+      url: `https://signflix.svst.in/searchvideos${q ? `?q=${encodeURIComponent(q)}` : ''}`,
+      siteName: "SignFlix",
+      type: "website",
+    },
   };
 }
 

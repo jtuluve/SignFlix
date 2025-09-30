@@ -23,8 +23,9 @@ export async function requeueVideo(id: string) {
   }
 }
 
-export async function getVideos() {
+export async function getVideos(isPublished?: boolean) {
   return await db.video.findMany({
+    where: { ...(isPublished !== undefined && { isPublished }) },
     include: {
       uploader: true,
       _count: {
@@ -87,9 +88,9 @@ export async function getVideobyId(id: string) {
   });
 }
 
-export async function getVideosByUser(uploaderId: string, take?: number, skip?: number) {
+export async function getVideosByUser(uploaderId: string, take?: number, skip?: number, isPublished?: boolean) {
   return await db.video.findMany({
-    where: { uploaderId },
+    where: { uploaderId, ...(isPublished !== undefined && { isPublished }) },
     include: {
       uploader: true,
       _count: {

@@ -23,6 +23,13 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+const formatDuration = (seconds?: number) => {
+  if (seconds === undefined || seconds === null) return "0:00";
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
 const ListViewCard = ({ video, onDelete, onPublish, onRetry }: { video: UploadedVideo; onDelete?: (id: string) => void; onPublish?: (id: string) => void; onRetry?: (id: string) => void }) => (
     <Card className="overflow-hidden">
         <div className="flex flex-col md:flex-row">
@@ -38,7 +45,7 @@ const ListViewCard = ({ video, onDelete, onPublish, onRetry }: { video: Uploaded
                 </Link>
                 {video.duration && (
                     <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded">
-                        {video.duration}
+                        {formatDuration(video.duration)}
                     </div>
                 )}
                 {!video.isPublished && onPublish && onRetry && (

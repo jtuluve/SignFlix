@@ -10,6 +10,21 @@ export const metadata: Metadata = {
 	title: "SignFlix - Video Streaming with Sign Language",
 	description:
 		"An accessible video streaming platform with integrated sign language interpretation for the deaf and hard-of-hearing community.",
+	keywords: ["SignFlix", "sign language", "ASL", "BSL", "video streaming", "accessible video", "Deaf community", "hard of hearing", "sign language interpretation", "online video"],
+	openGraph: {
+		title: "SignFlix - Video Streaming with Sign Language",
+		description:
+			"An accessible video streaming platform with integrated sign language interpretation for the deaf and hard-of-hearing community.",
+		url: "https://signflix.svst.in",
+		siteName: "SignFlix",
+		type: "website",
+		images: [
+			{
+				url: "/placeholder-logo.png",
+				alt: "SignFlix Logo",
+			},
+		],
+	},
 	icons: { icon: "/favicon.ico" },
 };
 

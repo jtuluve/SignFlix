@@ -5,6 +5,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { type Video, type User } from "@prisma/client";
 import { useRouter } from "next/navigation";
 
+const formatDuration = (seconds?: number) => {
+  if (seconds === undefined || seconds === null) return "0:00";
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
 type VideoWithUploader = Video & { uploader: User };
 
 export default function VideoCard({ video }: { video: VideoWithUploader }) {
@@ -26,7 +33,7 @@ export default function VideoCard({ video }: { video: VideoWithUploader }) {
             className="object-cover group-hover:scale-102 transition-transform duration-500"
           />
           <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded">
-            {video.duration}
+            {formatDuration(video.duration)}
           </div>
         </div>
         <div className="flex items-start gap-3">

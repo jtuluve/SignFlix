@@ -5,6 +5,7 @@ import SignIn from '@/components/SignIn';
 export const metadata: Metadata = {
   title: "Sign In / Sign Up - SignFlix",
   description: "Sign in or create an account to access SignFlix features.",
+  keywords: ["SignFlix", "sign in", "sign up", "login", "register", "account", "accessible video"],
   openGraph: {
     title: "Sign In / Sign Up - SignFlix",
     description: "Sign in or create an account to access SignFlix features.",

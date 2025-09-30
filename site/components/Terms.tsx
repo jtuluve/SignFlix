@@ -48,7 +48,7 @@ const Terms = () => {
         <p>
           If you are a copyright owner, or authorized on behalf of one, and you believe that the
           copyrighted work has been copied in a way that constitutes copyright infringement, please submit
-          your claim via email to copyright@signflix.com, with the subject line: "Copyright Infringement"
+          your claim via email to copyright@signflix.svst.in, with the subject line: "Copyright Infringement"
           and include in your claim a detailed description of the alleged Infringement as detailed below,
           under "DMCA Notice and Procedure for Copyright Infringement Claims".
         </p>

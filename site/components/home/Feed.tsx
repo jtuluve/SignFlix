@@ -8,7 +8,7 @@ import { type Video, type User } from "@prisma/client";
 type VideoWithUploader = Video & { uploader: User };
 
 export default async function Feed() {
-    const videos: VideoWithUploader[] = await getVideos() as VideoWithUploader[];
+    const videos: VideoWithUploader[] = await getVideos(true) as VideoWithUploader[];
 
     if (videos.length === 0) {
         return (

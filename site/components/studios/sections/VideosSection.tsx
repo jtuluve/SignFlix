@@ -78,10 +78,7 @@ export default function VideosSection() {
         if (!session?.user?.id) return;
         setIsLoading(true);
         try {
-            const fetchedVideos = await getVideosByUser(session.user.id, BATCH_SIZE, (pageNum - 1) * BATCH_SIZE);
-            const newVideos = fetchedVideos.filter(video => 
-                filterStatus === "published" ? video.isPublished : !video.isPublished
-            );
+            const newVideos = await getVideosByUser(session.user.id, BATCH_SIZE, (pageNum - 1) * BATCH_SIZE, filterStatus === "published");
             if (pageNum === 1) {
                 setVideos(newVideos);
             } else {

@@ -53,7 +53,8 @@ export async function getSubscriptionVideosAction(
     let whereClause: any = {
       uploaderId: creatorId 
         ? { in: [creatorId] } 
-        : { in: subscribedCreatorIds }
+        : { in: subscribedCreatorIds },
+      isPublished: true
     };
 
     // Apply time filter
@@ -114,6 +115,7 @@ export async function getSubscriptionVideosAction(
 export async function getSuggestedVideosAction(limit: number = 10) {
   try {
     const videos = await db.video.findMany({
+      where: { isPublished: true },
       include: {
         uploader: {
           select: {

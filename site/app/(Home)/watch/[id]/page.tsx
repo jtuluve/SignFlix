@@ -20,12 +20,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const title = video.title;
-  const description = video.description || "Watch this video on SignFlix.";
+  const description = video.description || `Watch ${video.title} with sign language interpretation on SignFlix. An accessible video experience for the Deaf and hard-of-hearing community.`;
   const thumbnailUrl = video.thumbnailUrl || "/placeholder.svg";
+  const keywords = ["SignFlix", "sign language", "ASL", "BSL", "video streaming", "accessible video", "Deaf community", "hard of hearing", "sign language interpretation", "online video", ...(video.tags || [])];
 
   return {
     title: title,
     description: description,
+    keywords: keywords,
     openGraph: {
       title: title,
       description: description,
