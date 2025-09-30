@@ -1,4 +1,3 @@
-
 'use client'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -8,16 +7,20 @@ import WatchView from "@/components/watch/watch-view"
 import { checkSubscription, toggleSubscription } from "@/utils/subscription"
 import { getVideobyId, incrementVideoViews } from "@/utils/video"
 import { useSession } from "next-auth/react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
+import { isVideoLiked } from "@/utils/likes"
 
 export default function WatchPage({ video, channel, videoUrl, captionUrl, signVideoUrl, posterUrl, title, views, time, description, id }) {
     const { data: session, status } = useSession();
     const [syncMode, setSyncMode] = useState<"adjust" | "pause">("pause");
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [subscribersCount, setSubscribersCount] = useState(channel?.subscribers ?? 0);
+    const [viewCount, setViewCount] = useState(views);
 
     useEffect(() => {
-        incrementVideoViews(id);
+        incrementVideoViews(id).then(() => {
+            setViewCount(prevCount => prevCount + 1);
+        });
     }, [id]);
 
     useEffect(() => {
@@ -28,7 +31,15 @@ export default function WatchPage({ video, channel, videoUrl, captionUrl, signVi
       }
     }, [status, session?.user?.id, channel?.id]);
 
-    async function onToggleSubscribe() {
+    useEffect(() => {
+        if (status === "authenticated" && session?.user?.id) {
+            isVideoLiked(id, session.user.id).then(liked => {
+                setInitialLiked(liked);
+            });
+        }
+    }, [status, session?.user?.id, id]);
+
+    const onToggleSubscribe = useCallback(async () => {
         if(status !== "authenticated" || !session?.user?.id){
           window.location.href = "/signin";
           return;
@@ -40,7 +51,7 @@ export default function WatchPage({ video, channel, videoUrl, captionUrl, signVi
         const result = await toggleSubscription(channel.id, session.user.id);
         setIsSubscribed(result.subscribed);
         setSubscribersCount(prevCount => prevCount + (result.subscribed ? 1 : -1));
-      }
+    }, [status, session?.user?.id, channel?.id]);
 
     return (
         <main className="min-h-screen bg-background">
@@ -62,10 +73,14 @@ export default function WatchPage({ video, channel, videoUrl, captionUrl, signVi
                       <Button variant={syncMode === 'pause' ? 'default' : 'outline'} onClick={() => setSyncMode('pause')}>Adjust by Pause</Button>
                       <Button variant={syncMode === 'adjust' ? 'default' : 'outline'} onClick={() => setSyncMode('adjust')}>Adjust by Speed</Button>
                   </div>
-                  <LikeButton videoId={String(id)} baseCount={video.likes} />
+                  <LikeButton videoId={String(id)} baseCount={video.likes} initialLiked={initialLiked} />
               </div>
   
               <h1 className="text-2xl font-bold">{title}</h1>
+              <div className="flex items-center gap-4">
+                <p className="text-sm text-muted-foreground">{viewCount.toLocaleString()} views</p>
+                <p className="text-sm text-muted-foreground">{time}</p>
+              </div>
               <p className="text-sm text-muted-foreground">{description}</p>
   
               <Separator />

@@ -72,6 +72,17 @@ export async function getVideoLikes(videoId: string, page = 1, limit = 50) {
   });
 }
 
+export async function isVideoLiked(videoId: string, userId: string) {
+  if (!userId) return false;
+  const like = await db.like.findFirst({
+    where: {
+      videoId,
+      userId,
+    },
+  });
+  return !!like;
+}
+
 export async function likeVideo(videoId: string) {
   const session = await getServerSession(authOptions as any);
   const userId = (session as any)?.user?.id as string | undefined;
