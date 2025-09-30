@@ -148,7 +148,7 @@ const Subscriptions = () => {
           username: sub.creator.username,
           avatarUrl: sub.creator.avatarUrl,
           subscribersCount: sub.creator.subscribersCount,
-          isVerified: sub.creator.role === 'ADMIN'
+          isVerified: sub.creator.role === 'USER'
         }));
         setSubscriptions(channelData);
 

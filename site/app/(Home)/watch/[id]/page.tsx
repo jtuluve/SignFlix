@@ -69,7 +69,6 @@ export default async function Page({ params = {} }: PageProps) {
         name: video.uploader.username, 
         avatar: video.uploader.avatarUrl,
         subscribers: video.uploader.subscribersCount,
-        isVerified: video.uploader.role === 'ADMIN'
     }
   }
 

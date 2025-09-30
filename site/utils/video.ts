@@ -54,6 +54,7 @@ export async function getVideobyId(id: string) {
       likes: true,
       tags: true,
       category: true,
+      isPublished: true,
       createdAt: true,
       uploaderId: true,
       uploader: {
@@ -65,6 +66,10 @@ export async function getVideobyId(id: string) {
           bannerUrl: true,
           description: true,
           subscribersCount: true,
+          role: true,
+          passwordHash: true,
+          bio: true,
+          createdAt: true,
         },
       },
       likesList: {
