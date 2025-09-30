@@ -46,26 +46,39 @@ export default function WatchPage({ video, channel, videoUrl, captionUrl, signVi
     }
   }, [status, session?.user?.id, id]);
 
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout;
+    useEffect(() => {
+        let intervalId: NodeJS.Timeout;
 
-    if (!currentSignVideoUrl && pollingAttempts < MAX_POLLING_ATTEMPTS) {
-      intervalId = setInterval(async () => {
-        setPollingAttempts(prev => prev + 1);
-        try {
-          const updatedVideo = await getVideobyId(id);
-          if (updatedVideo?.signVideoUrl) {
-            setCurrentSignVideoUrl(updatedVideo.signVideoUrl);
-            clearInterval(intervalId);
-          }
-        } catch (error) {
-          console.error("Error polling for signVideoUrl:", error);
+        console.log("WatchPage: Initial currentSignVideoUrl", currentSignVideoUrl);
+
+        if (!currentSignVideoUrl && pollingAttempts < MAX_POLLING_ATTEMPTS) {
+            intervalId = setInterval(async () => {
+                setPollingAttempts(prev => {
+                    console.log("WatchPage: Polling attempt", prev + 1);
+                    return prev + 1;
+                });
+                try {
+                    const updatedVideo = await getVideobyId(id);
+                    console.log("WatchPage: Polling - updatedVideo", updatedVideo);
+                    console.log("WatchPage: Polling - updatedVideo.signVideoUrl", updatedVideo?.signVideoUrl);
+                    if (updatedVideo?.signVideoUrl) {
+                        setCurrentSignVideoUrl(updatedVideo.signVideoUrl);
+                        clearInterval(intervalId);
+                        console.log("WatchPage: signVideoUrl updated, polling stopped.");
+                    }
+                } catch (error) {
+                    console.error("WatchPage: Error polling for signVideoUrl:", error);
+                }
+            }, POLLING_INTERVAL);
         }
-      }, POLLING_INTERVAL);
-    }
 
-    return () => clearInterval(intervalId);
-  }, [id, currentSignVideoUrl, pollingAttempts]);
+        return () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+                console.log("WatchPage: Polling interval cleared.");
+            }
+        };
+    }, [id, currentSignVideoUrl, pollingAttempts]);
 
   const onToggleSubscribe = useCallback(async () => {
     if (status !== "authenticated" || !session?.user?.id) {

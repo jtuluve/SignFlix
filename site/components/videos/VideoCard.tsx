@@ -1,4 +1,5 @@
-import Link from "next/link";
+"use client"
+
 import Image from "next/image";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { type Video, type User } from "@prisma/client";

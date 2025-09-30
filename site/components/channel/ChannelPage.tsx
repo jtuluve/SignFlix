@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/button';
 import { SubscribeButton } from '@/components/subscriptions/subscribebutton';
 import VideoCard from '@/components/videos/VideoCard';
 import ListViewCard from '@/components/studios/sections/ListViewCard';
+import { useSession } from "next-auth/react";
 
 export default function ChannelPage({ channel, videos }) {
   const [viewMode, setViewMode] = useState('grid');
+  const { data: session } = useSession();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -34,9 +36,11 @@ export default function ChannelPage({ channel, videos }) {
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end">
-          <SubscribeButton creatorId={channel.id} />
-        </div>
+        {session?.user?.id !== channel.id && (
+          <div className="mt-6 flex justify-end">
+            <SubscribeButton creatorId={channel.id} />
+          </div>
+        )}
 
         <div className="mt-8">
           <div className="flex justify-between items-center mb-4">

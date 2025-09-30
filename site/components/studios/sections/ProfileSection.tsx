@@ -25,6 +25,7 @@ export default function ProfileSection() {
     const [bannerUrl, setBannerUrl] = useState((session?.user as any)?.bannerUrl || "");
     const [isEditing, setIsEditing] = useState(false);
     const [subscribers, setSubscribers] = useState(0);
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         (async () => {
@@ -50,6 +51,7 @@ export default function ProfileSection() {
     }, [bannerFile]);
 
     const handleSave = async () => {
+        setIsSaving(true);
         try {
             let newBannerUrl = bannerUrl;
             if (bannerFile) {
@@ -61,6 +63,8 @@ export default function ProfileSection() {
             setIsEditing(false);
         } catch (error) {
             toast.error("Failed to save profile");
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -80,7 +84,7 @@ export default function ProfileSection() {
                                 Cancel
                             </Button>
                             <Button size="sm" onClick={handleSave}>
-                                Save
+                                {isSaving ? "Saving..." : "Save"}
                             </Button>
                         </div>
                     )}

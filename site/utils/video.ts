@@ -40,9 +40,39 @@ export async function getVideos() {
 export async function getVideobyId(id: string) {
   return await db.video.findUnique({
     where: { id },
-    include: {
-      uploader: true,
-      likesList: true,
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      videoUrl: true,
+      signVideoUrl: true,
+      signTimeUrl: true,
+      thumbnailUrl: true,
+      captionUrl: true,
+      duration: true,
+      views: true,
+      likes: true,
+      tags: true,
+      category: true,
+      createdAt: true,
+      uploaderId: true,
+      uploader: {
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          avatarUrl: true,
+          bannerUrl: true,
+          description: true,
+          subscribersCount: true,
+        },
+      },
+      likesList: {
+        select: {
+          id: true,
+          userId: true,
+        },
+      },
       _count: {
         select: {
           likesList: true,
