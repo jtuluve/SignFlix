@@ -1,5 +1,5 @@
 import { QueueServiceClient } from "@azure/storage-queue";
-import { getVideoInfoFromDb, saveResultToDb } from "./helpers/db";
+import { getVideoInfoFromDb, saveResultToDb, updateVideoPublishedStatus } from "./helpers/db";
 import path = require("path");
 import { downloadCaptions, textToPoseFile } from "./helpers/captions";
 import { uploadToBlob } from "./helpers/blob";
