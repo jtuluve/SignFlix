@@ -11,6 +11,9 @@ import React, {
 import Image from "next/image";
 import { newExtract } from "@/lib/newExtract";
 import { Prisma } from "@prisma/client";
+import { sign } from "crypto";
+import { Button } from "../ui/button";
+import { Fullscreen } from "lucide-react";
 
 type CaptionType = {
   id: number;
@@ -43,7 +46,7 @@ export default function WatchView({
 }: WatchViewProps) {
   const hasVideo = Boolean(videoUrl);
   const [isMainVideoPlaying, setIsMainVideoPlaying] = useState(false);
-
+  const [fullScreen, setFullScreen] = useState(false); 
   const mainRef = useRef<HTMLVideoElement | null>(null);
   const signRef = useRef<HTMLVideoElement | null>(null);
 
@@ -138,6 +141,7 @@ export default function WatchView({
     let currentTime = 0;
     let getCaption;
     let poseJson;
+    
 
     (async () => {
       if (captionUrl) {
@@ -262,35 +266,91 @@ export default function WatchView({
   }, [captionUrl, captions, findCurrentCaption, simOffset, fetchPoseData]);
 
   useEffect(() => {
-    const handleFullScreenChange = () => {
-      if (!mainRef.current || !signRef.current) return;
-
-      if (document.fullscreenElement === mainRef.current) {
-        if (signRef.current && document.pictureInPictureEnabled) {
-          signRef.current.requestPictureInPicture();
-        }
-      } else if (document.fullscreenElement === signRef.current) {
-        if (mainRef.current && document.pictureInPictureEnabled) {
-          mainRef.current.requestPictureInPicture();
-        }
-      } else {
-        if (document.pictureInPictureElement) {
-          document.exitPictureInPicture();
-        }
-      }
-    };
-
-    document.addEventListener("fullscreenchange", handleFullScreenChange);
-
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullScreenChange);
-    };
+    
+   document.addEventListener('fullscreenchange', () => {
+     const container = document.getElementById('cont')
+     const signidcont = document.getElementById('signid')
+     const videoidcont = document.getElementById('videoid')
+     
+     // If exiting fullscreen, restore original styles
+     if (!document.fullscreenElement && container.dataset.originalStyles) {
+       setFullScreen(prev => (false))
+       const originalStyles = JSON.parse(container.dataset.originalStyles);
+       if(parseInt(originalStyles.screen)){
+       signidcont.style.position = originalStyles.signidPosition
+       signidcont.style.zIndex = originalStyles.signidZIndex
+       videoidcont.style.width = originalStyles.videoidWidth
+       signidcont.style.width = originalStyles.signidWidth
+       }
+       else{
+        videoidcont.style.position = originalStyles.videoidPosition
+       videoidcont.style.zIndex = originalStyles.videoidZIndex
+       signidcont.style.width = originalStyles.signidWidth
+       videoidcont.style.width = originalStyles.videoidWidth
+       }
+       
+       // Clean up
+       delete container.dataset.originalStyles;
+     }
+   });
   }, []);
+  const toggleFullScreen = async (screen) => {
+     const container = document.getElementById('cont')
+     const signidcont = document.getElementById('signid')
+     const videoidcont = document.getElementById('videoid')
+     
+     if (!document.fullscreenElement) {
+       setFullScreen(true)
+       
+       let originalStyles;
+       
+       // Apply fullscreen styles
+       if(screen){
+        // Store original styles before entering fullscreen
+        originalStyles = {
+         signidPosition: signidcont.style.position,
+         signidZIndex: signidcont.style.zIndex,
+         videoidWidth: videoidcont.style.width,
+         signidWidth: signidcont.style.width,
+         screen:1
+       };
+        signidcont.style.position = 'fixed'
+        signidcont.style.zIndex = '2147483647'
+        videoidcont.style.width = '100vw'
+        signidcont.style.width = '20vw'
+       }else{
+        originalStyles = {
+         videoidPosition: videoidcont.style.position,
+         videoidZIndex: videoidcont.style.zIndex,
+         signidWidth: signidcont.style.width,
+         videoidWidth: videoidcont.style.width,
+         screen:0
+       };
+        videoidcont.style.position = 'fixed'
+        videoidcont.style.zIndex = '2147483647'
+        signidcont.style.width = '100vw'
+        videoidcont.style.width = '20vw'
+       }
+       
+       // Store original styles in container dataset
+       container.dataset.originalStyles = JSON.stringify(originalStyles);
+       
+       container.requestFullscreen();
+     } else {
+       document.exitFullscreen();
+     }
+   };
+
 
   return (
     <section className="space-y-4">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <div className="aspect-video rounded-lg overflow-hidden relative border bg-background">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3" id="cont">
+        <div className="aspect-video rounded-lg overflow-hidden relative border bg-background" id = "signid">
+          {fullScreen && (
+            <Button className="shrink-0 fixed right-1 z-50" size="lg" onClick={toggleFullScreen}>
+                        small screen
+      </Button>
+          )}
           {captionUrl && captions.length > 0 && (
             <>
               <div className="absolute inset-x-0 top-0 bg-black/40 text-white text-xs px-3 py-1">
@@ -304,9 +364,10 @@ export default function WatchView({
             </>
           ) }
           {_poseData ? (
+            
             createElement("pose-viewer", {
               ref: signRef,
-              className: "w-full h-full",
+              className: "w-full h-full flex justify-center",
               src: _poseData,
               "aria-label": "Sign language pose viewer",
               autoplay: true,
@@ -330,18 +391,22 @@ export default function WatchView({
           )}
         </div>
 
-        <div className="aspect-video rounded-lg overflow-hidden bg-black relative">
+        <div className="aspect-video rounded-lg overflow-hidden bg-black relative" id="videoid">
           {hasVideo ? (
             <React.Fragment>
+             <div> 
               <video
                 ref={mainRef}
                 className="w-full h-full"
+                autoPlay
+                muted
                 controls
+                controlsList="nofullscreen"
                 preload="metadata"
                 playsInline
                 poster={posterUrl ?? undefined}
                 aria-label="Main source video"
-              >
+              > 
                 <source src={videoUrl} type="video/mp4" />
                 <track
                   src={captionUrl || undefined}
@@ -351,6 +416,8 @@ export default function WatchView({
                   default
                 />
               </video>
+
+              </div>
               {!captionUrl && (
                 <div className="text-xs text-red-600">
                   No captions available for this video.
@@ -380,6 +447,18 @@ export default function WatchView({
             </>
           )}
         </div>
+      </div>
+      <div className="flex justify-between">
+      <Button className="shrink-0" size="lg" onClick={()=>{
+        toggleFullScreen(0)
+      }}>
+                        Sign Full Screen
+      </Button>
+      <Button className="shrink-0" size="lg" onClick={()=>{
+        toggleFullScreen(1)
+      }}>
+                        Video Full Screen
+      </Button>
       </div>
     </section>
   );
