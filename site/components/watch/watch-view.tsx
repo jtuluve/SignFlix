@@ -288,7 +288,7 @@ export default function WatchView({
        signidcont.style.width = originalStyles.signidWidth
        videoidcont.style.width = originalStyles.videoidWidth
        }
-       
+      //  screen.orientation.unlock();
        // Clean up
        delete container.dataset.originalStyles;
      }
@@ -316,8 +316,11 @@ export default function WatchView({
        };
         signidcont.style.position = 'fixed'
         signidcont.style.zIndex = '2147483647'
-        videoidcont.style.width = '100vw'
+        videoidcont.style.width = 'fit-content'
         signidcont.style.width = '20vw'
+        videoidcont.style.marginRight = 'auto';
+        videoidcont.style.marginLeft = 'auto';
+        
        }else{
         originalStyles = {
          videoidPosition: videoidcont.style.position,
@@ -328,16 +331,23 @@ export default function WatchView({
        };
         videoidcont.style.position = 'fixed'
         videoidcont.style.zIndex = '2147483647'
-        signidcont.style.width = '100vw'
+        signidcont.style.width = 'fit-content'
         videoidcont.style.width = '20vw'
+        signidcont.style.marginRight = 'auto';
+        signidcont.style.marginLeft = 'auto';
        }
        
        // Store original styles in container dataset
        container.dataset.originalStyles = JSON.stringify(originalStyles);
        
-       container.requestFullscreen();
+         await container.requestFullscreen().then(() => {
+            (window.screen.orientation as any).lock('landscape').catch(()=>{});
+         });
+
+        
      } else {
        document.exitFullscreen();
+      //  screen.orientation.unlock();
      }
    };
 
@@ -353,14 +363,14 @@ export default function WatchView({
           )}
           {captionUrl && captions.length > 0 && (
             <>
-              <div className="absolute inset-x-0 top-0 bg-black/40 text-white text-xs px-3 py-1">
+              {/* <div className="absolute inset-x-0 top-0 bg-black/40 text-white text-xs px-3 py-1">
                 {"Pose Simulation — synchronized with captions"}
-              </div>
-              {currentCaption && (
+              </div> */}
+              {/* {currentCaption && (
                 <div className="absolute inset-x-0 bottom-0 bg-black/50 text-white text-xs px-3 py-2">
                   {currentCaption}
                 </div>
-              )}
+              )} */}
             </>
           ) }
           {_poseData ? (
@@ -384,9 +394,9 @@ export default function WatchView({
                 className="object-cover"
                 priority
               />
-              <div className="absolute inset-x-0 bottom-0 bg-black/50 text-white text-xs px-3 py-2">
+              {/* <div className="absolute inset-x-0 bottom-0 bg-black/50 text-white text-xs px-3 py-2">
                 {"Sign Language Simulation (no video available)"}
-              </div>
+              </div> */}
             </>
           )}
         </div>
@@ -401,7 +411,8 @@ export default function WatchView({
                 autoPlay
                 muted
                 controls
-                controlsList="nofullscreen"
+                controlsList="nofullscreen nodownload noremoteplayback "
+                disablePictureInPicture
                 preload="metadata"
                 playsInline
                 poster={posterUrl ?? undefined}
