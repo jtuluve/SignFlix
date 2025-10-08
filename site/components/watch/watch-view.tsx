@@ -281,12 +281,14 @@ export default function WatchView({
        signidcont.style.zIndex = originalStyles.signidZIndex
        videoidcont.style.width = originalStyles.videoidWidth
        signidcont.style.width = originalStyles.signidWidth
+       videoidcont.style.margin = originalStyles.videoidMargin
        }
        else{
         videoidcont.style.position = originalStyles.videoidPosition
        videoidcont.style.zIndex = originalStyles.videoidZIndex
        signidcont.style.width = originalStyles.signidWidth
        videoidcont.style.width = originalStyles.videoidWidth
+       signidcont.style.margin = originalStyles.signidMargin
        }
       //  screen.orientation.unlock();
        // Clean up
@@ -312,6 +314,7 @@ export default function WatchView({
          signidZIndex: signidcont.style.zIndex,
          videoidWidth: videoidcont.style.width,
          signidWidth: signidcont.style.width,
+         videoidMargin: videoidcont.style.margin,
          screen:1
        };
         signidcont.style.position = 'fixed'
@@ -327,6 +330,7 @@ export default function WatchView({
          videoidZIndex: videoidcont.style.zIndex,
          signidWidth: signidcont.style.width,
          videoidWidth: videoidcont.style.width,
+         signidMargin: signidcont.style.margin,
          screen:0
        };
         videoidcont.style.position = 'fixed'
